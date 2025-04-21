@@ -38,22 +38,26 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2 # Kiểm tra phiên bản mới nhất nếu cần
 
-      # Bước 4: Khôi phục các gói NuGet
-      # Thay 'YourSolution.sln' bằng tên file solution của bạn
+      # Bước 4: Khôi phục các gói NuGet (Đảm bảo đúng tên file .sln)
       - name: Restore NuGet packages
-        run: nuget restore WoWonder.sln
+        run: nuget restore "WoWonder V6.2.sln" # Giả sử đây là file solution gốc của bạn
 
       # Bước 5: Build dự án Android
-      # Thay 'YourProject.Android/YourProject.Android.csproj' bằng đường dẫn đến file project Android
-      # Có thể cần thêm các tham số /p:... khác tùy cấu hình build (Debug/Release, signing...)
+      # *** SỬA LẠI ĐƯỜNG DẪN VÀ CHỌN MỘT TARGET ***
       - name: Build Android project
-        run: msbuild SocialNetwork.WoWonder/WoWonder.csproj /t:Build /t:PackageForAndroid /p:Configuration=Release /t:SignAndroidPackage
+        # Đường dẫn đúng là "Script/WoWonder/WoWonder.csproj"
+        # Chọn MỘT target, ví dụ: PackageForAndroid
+        run: msbuild Script/WoWonder/WoWonder.csproj /p:Configuration=Release /t:PackageForAndroid
+        # Hoặc nếu bạn ĐÃ cấu hình signing và muốn ký luôn:
+        # run: msbuild Script/WoWonder/WoWonder.csproj /p:Configuration=Release /t:SignAndroidPackage
+        # Hoặc nếu chỉ muốn biên dịch:
+        # run: msbuild Script/WoWonder/WoWonder.csproj /p:Configuration=Release /t:Build
 
-      # Bước 6 (Tùy chọn): Tải lên file APK/AAB đã build làm artifact
+      # Bước 6: Upload Artifact (Đảm bảo path khớp với output của target đã chọn)
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-app
-          path: SocialNetwork.WoWonder/output/app.apk # Thay bằng đường dẫn thực tế đến file APK/AAB
-
+          # Cập nhật path này cho đúng với nơi file .apk hoặc .aab được tạo ra
+          path: Script/WoWonder/bin/Release/*.apk # Hoặc *.aab
   
