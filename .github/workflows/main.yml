@@ -1,0 +1,55 @@
+# Tên của workflow (hiển thị trên tab Actions)
+name: Build Xamarin App
+
+# Định nghĩa sự kiện kích hoạt workflow
+# Ví dụ: Chạy mỗi khi có push lên nhánh 'main'
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+# Định nghĩa các công việc (jobs) sẽ chạy
+jobs:
+  # --- Công việc build cho Android ---
+  build_android:
+    # Chọn hệ điều hành cho máy ảo chạy job này
+    runs-on: windows-latest # Hoặc ubuntu-latest
+
+    steps:
+      # Bước 1: Checkout code từ repository về máy ảo
+      - name: Checkout code
+        uses: actions/checkout@v4 # Sử dụng action có sẵn của GitHub
+
+      # Bước 2: Cài đặt Java (cần cho Android SDK)
+      - name: Setup Java JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft' # Hoặc 'temurin', 'zulu', etc.
+          java-version: '11' # Chọn phiên bản JDK phù hợp với dự án Xamarin của bạn
+
+      # Bước 3: Cài đặt .NET SDK (Nếu cần phiên bản cụ thể, nếu không máy ảo thường có sẵn)
+      # - name: Setup .NET SDK
+      #   uses: actions/setup-dotnet@v4
+      #   with:
+      #     dotnet-version: '6.0.x' # Thay bằng phiên bản .NET bạn cần
+
+      # Bước 4: Khôi phục các gói NuGet
+      # Thay 'YourSolution.sln' bằng tên file solution của bạn
+      - name: Restore NuGet packages
+        run: nuget restore WoWonder.sln
+
+      # Bước 5: Build dự án Android
+      # Thay 'YourProject.Android/YourProject.Android.csproj' bằng đường dẫn đến file project Android
+      # Có thể cần thêm các tham số /p:... khác tùy cấu hình build (Debug/Release, signing...)
+      - name: Build Android project
+        run: msbuild SocialNetwork.WoWonder/WoWonder.csproj /t:Build /t:PackageForAndroid /p:Configuration=Release /t:SignAndroidPackage
+
+      # Bước 6 (Tùy chọn): Tải lên file APK/AAB đã build làm artifact
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-app
+          path: SocialNetwork.WoWonder/output/app.apk # Thay bằng đường dẫn thực tế đến file APK/AAB
+
+  
