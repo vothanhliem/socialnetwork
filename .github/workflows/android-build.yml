@@ -19,30 +19,79 @@ jobs:
       with:
         dotnet-version: 8.0.x
         
+    - name: Setup Java JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'microsoft'
+        java-version: '11'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+        
     - name: Setup Workload
       run: dotnet workload install android
-
+        
     - name: Restore dependencies
       run: dotnet restore
       
-    - name: Build APK
-      run: dotnet publish WoWonder/WoWonder.csproj -c Release -f net8.0-android --no-restore
-
-    - name: Verify Directory Structure
+    - name: Build Debug APK first
+      run: dotnet build WoWonder/WoWonder.csproj -c Debug -f net8.0-android
+        
+    - name: Build Release APK
       run: |
-        Write-Host "Checking directory structure..."
-        if (Test-Path "WoWonder/bin") {
-          Get-ChildItem -Path "WoWonder/bin" -Recurse -Depth 3 | Where-Object { $_.Extension -eq ".apk" }
+        Write-Host "Starting Release Build..."
+        # Create dummy keystore for signing if needed
+        Write-Host "Creating dummy keystore for CI build"
+        $keystoreDir = "WoWonder/KeyApk"
+        if (!(Test-Path $keystoreDir)) { New-Item -ItemType Directory -Path $keystoreDir -Force }
+        
+        # Create a dummy keystore for CI
+        keytool -genkeypair -v -keystore "WoWonder/KeyApk/WoWonder.keystore" -alias WoWonder -keyalg RSA -keysize 2048 -validity 10000 -storepass aaaaaaaa -keypass aaaaaaaa -dname "CN=CI Build,O=CI,L=CI,S=CI,C=US"
+        
+        # Alternative build command with explicit parameters
+        dotnet publish WoWonder/WoWonder.csproj -c Release -f net8.0-android `
+          /p:AndroidPackageFormat=apk `
+          /p:EmbedAssembliesIntoApk=true `
+          /p:AndroidKeyStore=true `
+          /p:AndroidSigningKeyStore="KeyApk/WoWonder.keystore" `
+          /p:AndroidSigningStorePass=aaaaaaaa `
+          /p:AndroidSigningKeyAlias=WoWonder `
+          /p:AndroidSigningKeyPass=aaaaaaaa `
+          /p:OutputPath="bin/Release/PublishOutput" `
+          --self-contained
+        
+        Write-Host "Release Build Completed"
+        
+    - name: Find and Report APKs
+      run: |
+        Write-Host "Searching for APK files in all locations..."
+        
+        $apkFiles = Get-ChildItem -Path . -Recurse -Include "*.apk" 
+        
+        if ($apkFiles.Count -eq 0) {
+            Write-Host "No APK files found! Checking build logs..."
+        } else {
+            Write-Host "Found $($apkFiles.Count) APK files:"
+            $apkFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
         }
-        if (Test-Path "WoWonder/obj") {
-          Get-ChildItem -Path "WoWonder/obj" -Recurse -Depth 3 | Where-Object { $_.Extension -eq ".apk" }
+        
+        # Check specific publish output location
+        if (Test-Path "WoWonder/bin/Release/PublishOutput") {
+            Write-Host "Contents of publish output directory:"
+            Get-ChildItem -Path "WoWonder/bin/Release/PublishOutput" -Recurse | ForEach-Object { Write-Host "  - $($_.FullName)" }
         }
-      
-    - name: Upload APK
+        
+        # Check working directory for final files
+        Write-Host "Contents of current directory:"
+        Get-ChildItem -Path . -Depth 1 | ForEach-Object { Write-Host "  - $($_.FullName)" }
+        
+    - name: Upload All APKs
       uses: actions/upload-artifact@v3
       with:
-        name: apk-files
+        name: android-apks
         path: |
-          WoWonder/bin/**/*.apk
-          WoWonder/obj/**/*.apk
+          **/*.apk
+          WoWonder/bin/Release/PublishOutput/**/*.apk
+          WoWonder/bin/Release/net8.0-android/**/*.apk
+          WoWonder/bin/Release/net8.0-android/**/android-*.apk
         if-no-files-found: warn
