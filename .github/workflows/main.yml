@@ -28,6 +28,13 @@ jobs:
           distribution: 'microsoft' # Hoặc 'temurin', 'zulu', etc.
           java-version: '11' # Chọn phiên bản JDK phù hợp với dự án Xamarin của bạn
 
+      # Bước 2.1: Tăng kích thước heap của Java
+      - name: Increase Java Heap Size
+        shell: pwsh
+        run: |
+          Write-Host "Setting JAVA_TOOL_OPTIONS to increase heap size..."
+          $env:JAVA_TOOL_OPTIONS = "-Xmx4096m"
+
       # Bước 3: Cài đặt .NET SDK (Nếu cần phiên bản cụ thể, nếu không máy ảo thường có sẵn)
       # - name: Setup .NET SDK
       #   uses: actions/setup-dotnet@v4
