@@ -42,27 +42,32 @@ jobs:
       - name: Restore NuGet packages
         run: nuget restore "WoWonder.sln" # Giả sử đây là file solution gốc của bạn
 
-      # Bước 5: Build dự án Android
-      # *** SỬA LẠI ĐƯỜNG DẪN VÀ CHỌN MỘT TARGET ***
-      - name: Build Android project
-        # Explicitly change directory and use absolute path for msbuild
+      # Debugging step: List directory structure
+      - name: List directory structure
         run: |
-          cd "${{ github.workspace }}\Script\WoWonder"
-          msbuild WoWonder.csproj /p:Configuration=Release /t:PackageForAndroid
-        # Hoặc nếu bạn ĐÃ cấu hình signing và muốn ký luôn:
-        # run: |
-        #   cd "${{ github.workspace }}\Script\WoWonder"
-        #   msbuild WoWonder.csproj /p:Configuration=Release /t:SignAndroidPackage
-        # Hoặc nếu chỉ muốn biên dịch:
-        # run: |
-        #   cd "${{ github.workspace }}\Script\WoWonder"
-        #   msbuild WoWonder.csproj /p:Configuration=Release /t:Build
+          echo "Listing root directory:"
+          ls "${{ github.workspace }}"
+          echo "Listing Script directory:"
+          ls "${{ github.workspace }}/Script"
+          echo "Listing WoWonder directory:"
+          ls "${{ github.workspace }}/Script/WoWonder"
+
+      # Debugging step: List all files recursively to locate WoWonder.csproj
+      - name: Locate WoWonder.csproj
+        run: |
+          echo "Listing all files recursively to locate WoWonder.csproj:"
+          find "${{ github.workspace }}" -type f -name "WoWonder.csproj"
+
+      # Bước 5: Build dự án Android
+      - name: Build Android project
+        # Use absolute path for msbuild based on the correct location of WoWonder.csproj
+        run: msbuild /p:Configuration=Release /t:PackageForAndroid "${{ github.workspace }}/Script/WoWonder/WoWonder.csproj"
 
       # Bước 6: Upload Artifact (Đảm bảo path khớp với output của target đã chọn)
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-app
-          # Path relative to the workspace root, using backslashes
-          path: Script\WoWonder\bin\Release\*.apk # Hoặc *.aab
+          # Path relative to the workspace root
+          path: Script/WoWonder/bin/Release/*.apk # Hoặc *.aab
 
