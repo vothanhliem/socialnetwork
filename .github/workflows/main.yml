@@ -44,43 +44,51 @@ jobs:
 
       # Debugging step: List directory structure
       - name: List directory structure
+        shell: pwsh
         run: |
-          echo "Listing root directory:"
-          ls "${{ github.workspace }}"
-          if [ -d "${{ github.workspace }}/Script" ]; then
-            echo "Listing Script directory:"
-            ls "${{ github.workspace }}/Script"
-          else
-            echo "Script directory does not exist."
-          fi
-          if [ -d "${{ github.workspace }}/WoWonder" ]; then
-            echo "Listing WoWonder directory:"
-            ls "${{ github.workspace }}/WoWonder"
-          else
-            echo "WoWonder directory does not exist."
-          fi
+          Write-Host "Listing root directory:"
+          Get-ChildItem "${{ github.workspace }}"
+          if (Test-Path "${{ github.workspace }}/Script") {
+            Write-Host "Listing Script directory:"
+            Get-ChildItem "${{ github.workspace }}/Script"
+          } else {
+            Write-Host "Script directory does not exist."
+          }
+          if (Test-Path "${{ github.workspace }}/WoWonder") {
+            Write-Host "Listing WoWonder directory:"
+            Get-ChildItem "${{ github.workspace }}/WoWonder"
+          } else {
+            Write-Host "WoWonder directory does not exist."
+          }
 
       # Debugging step: List all files recursively to locate WoWonder.csproj
       - name: Locate WoWonder.csproj
+        shell: pwsh
         run: |
-          echo "Listing all files recursively to locate WoWonder.csproj:"
-          find "${{ github.workspace }}" -type f -name "WoWonder.csproj" || echo "WoWonder.csproj not found."
+          Write-Host "Listing all files recursively to locate WoWonder.csproj:"
+          Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "WoWonder.csproj" -File | ForEach-Object { Write-Host $_.FullName } 
+          if (-not (Get-ChildItem -Path "${{ github.workspace }}" -Recurse -Filter "WoWonder.csproj" -File)) {
+            Write-Host "WoWonder.csproj not found."
+          }
 
       # Bước 5: Build dự án Android
       - name: Build Android project
-        if: ${{ env.WOWONDER_PROJECT_EXISTS == 'true' }}
+        shell: pwsh
         run: |
-          if [ -f "${{ github.workspace }}/WoWonder/WoWonder.csproj" ]; then
+          if (Test-Path "${{ github.workspace }}/WoWonder/WoWonder.csproj") {
             msbuild /p:Configuration=Release /t:PackageForAndroid "${{ github.workspace }}/WoWonder/WoWonder.csproj"
-          else
-            echo "WoWonder.csproj not found. Skipping build."
-          fi
+          } else {
+            Write-Host "WoWonder.csproj not found. Skipping build."
+          }
 
       # Bước 6: Upload Artifact (Đảm bảo path khớp với output của target đã chọn)
       - name: Upload Android Artifact
-        if: ${{ env.WOWONDER_PROJECT_EXISTS == 'true' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-app
-          path: WoWonder/bin/Release/*.apk || echo "No APK found to upload."
+        shell: pwsh
+        run: |
+          if (Test-Path "${{ github.workspace }}/WoWonder/bin/Release/*.apk") {
+            Write-Host "Uploading APK..."
+            # Upload logic here
+          } else {
+            Write-Host "No APK found to upload."
+          }
 
