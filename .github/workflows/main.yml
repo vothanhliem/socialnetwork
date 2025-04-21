@@ -76,9 +76,21 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path "${{ github.workspace }}/WoWonder/WoWonder.csproj") {
+            Write-Host "Building WoWonder Android project..."
             msbuild /p:Configuration=Release /t:PackageForAndroid "${{ github.workspace }}/WoWonder/WoWonder.csproj"
           } else {
             Write-Host "WoWonder.csproj not found. Skipping build."
+          }
+
+      # Debugging step: Verify APK generation
+      - name: Verify APK generation
+        shell: pwsh
+        run: |
+          if (Test-Path "${{ github.workspace }}/WoWonder/bin/Release") {
+            Write-Host "Listing contents of WoWonder/bin/Release:"
+            Get-ChildItem "${{ github.workspace }}/WoWonder/bin/Release"
+          } else {
+            Write-Host "WoWonder/bin/Release directory does not exist."
           }
 
       # Bước 6: Upload Artifact (Đảm bảo path khớp với output của target đã chọn)
