@@ -15,6 +15,8 @@
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
 		<RuntimeIdentifiers>android-arm;android-arm64</RuntimeIdentifiers>
 		<EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
+		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<JavaMaximumHeapSize>4G</JavaMaximumHeapSize>
@@ -357,7 +359,7 @@
 		<PackageReference Include="Xamarin.AndroidX.Arch.Core.Common" Version="2.2.0.15" />
 		<PackageReference Include="Xamarin.AndroidX.Arch.Core.Runtime" Version="2.2.0.15" />
 		<PackageReference Include="Xamarin.AndroidX.AsyncLayoutInflater" Version="1.0.0.31" />
-		<PackageReference Include="Xamarin.AndroidX.Browser" Version="1.6.0" />
+		<PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.4" />
 		<PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.1.0" />
 		<PackageReference Include="Xamarin.AndroidX.Camera.Core" Version="1.1.0" />
 		<PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.1.0" />
