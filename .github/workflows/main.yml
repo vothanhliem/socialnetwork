@@ -45,19 +45,19 @@ jobs:
       # Bước 5: Build dự án Android
       # *** SỬA LẠI ĐƯỜNG DẪN VÀ CHỌN MỘT TARGET ***
       - name: Build Android project
-        # Use absolute path with github.workspace and forward slashes, specify bash shell
-        shell: bash
-        run: msbuild "${{ github.workspace }}/Script/WoWonder/WoWonder.csproj" /p:Configuration=Release /t:PackageForAndroid
+        # Set working directory and use relative path for csproj
+        working-directory: Script\WoWonder
+        run: msbuild WoWonder.csproj /p:Configuration=Release /t:PackageForAndroid
         # Hoặc nếu bạn ĐÃ cấu hình signing và muốn ký luôn:
-        # run: msbuild "${{ github.workspace }}/Script/WoWonder/WoWonder.csproj" /p:Configuration=Release /t:SignAndroidPackage
+        # run: msbuild WoWonder.csproj /p:Configuration=Release /t:SignAndroidPackage
         # Hoặc nếu chỉ muốn biên dịch:
-        # run: msbuild "${{ github.workspace }}/Script/WoWonder/WoWonder.csproj" /p:Configuration=Release /t:Build
+        # run: msbuild WoWonder.csproj /p:Configuration=Release /t:Build
 
       # Bước 6: Upload Artifact (Đảm bảo path khớp với output của target đã chọn)
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-app
-          # Use absolute path with github.workspace and forward slashes
-          path: ${{ github.workspace }}/Script/WoWonder/bin/Release/*.apk # Hoặc *.aab
+          # Path relative to the workspace root
+          path: Script\WoWonder\bin\Release\*.apk # Hoặc *.aab
 
