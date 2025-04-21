@@ -19,21 +19,30 @@ jobs:
       with:
         dotnet-version: 8.0.x
         
+    - name: Setup Workload
+      run: dotnet workload install android
+
     - name: Restore dependencies
       run: dotnet restore
       
     - name: Build APK
-      run: dotnet build WoWonder/WoWonder.csproj -c Release
-      
-    - name: List output directory
-      run: Get-ChildItem -Recurse WoWonder/bin/Release/net8.0-android
+      run: dotnet publish WoWonder/WoWonder.csproj -c Release -f net8.0-android --no-restore
+
+    - name: Verify Directory Structure
+      run: |
+        Write-Host "Checking directory structure..."
+        if (Test-Path "WoWonder/bin") {
+          Get-ChildItem -Path "WoWonder/bin" -Recurse -Depth 3 | Where-Object { $_.Extension -eq ".apk" }
+        }
+        if (Test-Path "WoWonder/obj") {
+          Get-ChildItem -Path "WoWonder/obj" -Recurse -Depth 3 | Where-Object { $_.Extension -eq ".apk" }
+        }
       
     - name: Upload APK
       uses: actions/upload-artifact@v3
       with:
         name: apk-files
         path: |
-          WoWonder/bin/Release/net8.0-android/**/*.apk
-          WoWonder/bin/Release/net8.0-android/android-arm64/**/*.apk
-          WoWonder/bin/Release/net8.0-android/android-arm/**/*.apk
+          WoWonder/bin/**/*.apk
+          WoWonder/obj/**/*.apk
         if-no-files-found: warn
