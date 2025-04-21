@@ -45,13 +45,13 @@ jobs:
       # Bước 5: Build dự án Android
       # *** SỬA LẠI ĐƯỜNG DẪN VÀ CHỌN MỘT TARGET ***
       - name: Build Android project
-        # Đường dẫn đúng là "Script\WoWonder\WoWonder.csproj" using backslashes
+        # Đường dẫn đúng là "Script\WoWonder\WoWonder.csproj" using backslashes and quotes
         # Chọn MỘT target, ví dụ: PackageForAndroid
-        run: msbuild Script\WoWonder\WoWonder.csproj /p:Configuration=Release /t:PackageForAndroid
+        run: msbuild "Script\WoWonder\WoWonder.csproj" /p:Configuration=Release /t:PackageForAndroid
         # Hoặc nếu bạn ĐÃ cấu hình signing và muốn ký luôn:
-        # run: msbuild Script\WoWonder\WoWonder.csproj /p:Configuration=Release /t:SignAndroidPackage
+        # run: msbuild "Script\WoWonder\WoWonder.csproj" /p:Configuration=Release /t:SignAndroidPackage
         # Hoặc nếu chỉ muốn biên dịch:
-        # run: msbuild Script\WoWonder\WoWonder.csproj /p:Configuration=Release /t:Build
+        # run: msbuild "Script\WoWonder\WoWonder.csproj" /p:Configuration=Release /t:Build
 
       # Bước 6: Upload Artifact (Đảm bảo path khớp với output của target đã chọn)
       - name: Upload Android Artifact
