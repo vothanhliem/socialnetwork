@@ -17,6 +17,7 @@
 		<EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
 		<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 		<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+		<NoWarn>1701;1702;CA1416;CA1422;CS0618;SYSLIB0039;NU1608</NoWarn>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<JavaMaximumHeapSize>4G</JavaMaximumHeapSize>
@@ -26,7 +27,7 @@
 		<AndroidSigningKeyPass>aaaaaaaa</AndroidSigningKeyPass>
 		<!--apk - aab-->
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
-		<NoWarn>1701;1702;CA1416;CA1422;CS0618;SYSLIB0039</NoWarn>
+		<NoWarn>1701;1702;CA1416;CA1422;CS0618;SYSLIB0039;NU1608</NoWarn>
 		<!--for Debug : android-arm - android-arm64 - android-x86 - android-x64 -->
 		<RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64;</RuntimeIdentifiers>
 		<PublishTrimmed>False</PublishTrimmed>
@@ -46,7 +47,7 @@
 		<!--apk - aab-->
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
 		<!--<AndroidPackageFormats>apk;aab</AndroidPackageFormats>-->
-		<NoWarn>1701;1702;CA1416;CA1422;CS0618;SYSLIB0039</NoWarn>
+		<NoWarn>1701;1702;CA1416;CA1422;CS0618;SYSLIB0039;NU1608</NoWarn>
 		<!--for Release Recommended : android-arm - android-arm64 -->
 		<RuntimeIdentifiers>android-arm;android-arm64;</RuntimeIdentifiers>
 		<PublishTrimmed>True</PublishTrimmed>
@@ -359,7 +360,7 @@
 		<PackageReference Include="Xamarin.AndroidX.Arch.Core.Common" Version="2.2.0.15" />
 		<PackageReference Include="Xamarin.AndroidX.Arch.Core.Runtime" Version="2.2.0.15" />
 		<PackageReference Include="Xamarin.AndroidX.AsyncLayoutInflater" Version="1.0.0.31" />
-		<PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.4" />
+		<PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.8" />
 		<PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.1.0" />
 		<PackageReference Include="Xamarin.AndroidX.Camera.Core" Version="1.1.0" />
 		<PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.1.0" />
