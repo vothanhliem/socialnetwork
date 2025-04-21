@@ -77,7 +77,7 @@ jobs:
         run: |
           if (Test-Path "${{ github.workspace }}/WoWonder/WoWonder.csproj") {
             Write-Host "Building WoWonder Android project..."
-            msbuild /p:Configuration=Release /t:PackageForAndroid "${{ github.workspace }}/WoWonder/WoWonder.csproj"
+            msbuild /p:Configuration=Release /p:Platform="Any CPU" /t:PackageForAndroid "${{ github.workspace }}/WoWonder/WoWonder.csproj"
           } else {
             Write-Host "WoWonder.csproj not found. Skipping build."
           }
@@ -86,18 +86,18 @@ jobs:
       - name: Verify APK generation
         shell: pwsh
         run: |
-          if (Test-Path "${{ github.workspace }}/WoWonder/bin/Release") {
-            Write-Host "Listing contents of WoWonder/bin/Release:"
-            Get-ChildItem "${{ github.workspace }}/WoWonder/bin/Release"
+          if (Test-Path "${{ github.workspace }}/WoWonder/bin/Release/net8.0-android") {
+            Write-Host "Listing contents of WoWonder/bin/Release/net8.0-android:"
+            Get-ChildItem "${{ github.workspace }}/WoWonder/bin/Release/net8.0-android"
           } else {
-            Write-Host "WoWonder/bin/Release directory does not exist."
+            Write-Host "WoWonder/bin/Release/net8.0-android directory does not exist."
           }
 
       # Bước 6: Upload Artifact (Đảm bảo path khớp với output của target đã chọn)
       - name: Upload Android Artifact
         shell: pwsh
         run: |
-          if (Test-Path "${{ github.workspace }}/WoWonder/bin/Release/*.apk") {
+          if (Test-Path "${{ github.workspace }}/WoWonder/bin/Release/net8.0-android/*.apk") {
             Write-Host "Uploading APK..."
             # Upload logic here
           } else {
