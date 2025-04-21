@@ -48,50 +48,75 @@ jobs:
         # Create a dummy keystore for CI
         keytool -genkeypair -v -keystore "WoWonder/KeyApk/WoWonder.keystore" -alias WoWonder -keyalg RSA -keysize 2048 -validity 10000 -storepass aaaaaaaa -keypass aaaaaaaa -dname "CN=CI Build,O=CI,L=CI,S=CI,C=US"
         
-        # Alternative build command with explicit parameters
+        # Set explicit output path in the current directory structure
+        $outputPath = "build-output"
+        New-Item -ItemType Directory -Path $outputPath -Force
+        
+        # Build directly to specified folder with simplified parameters
         dotnet publish WoWonder/WoWonder.csproj -c Release -f net8.0-android `
+          -o $outputPath `
+          /p:AndroidBuildApplicationPackage=true `
           /p:AndroidPackageFormat=apk `
-          /p:EmbedAssembliesIntoApk=true `
-          /p:AndroidKeyStore=true `
-          /p:AndroidSigningKeyStore="KeyApk/WoWonder.keystore" `
-          /p:AndroidSigningStorePass=aaaaaaaa `
-          /p:AndroidSigningKeyAlias=WoWonder `
-          /p:AndroidSigningKeyPass=aaaaaaaa `
-          /p:OutputPath="bin/Release/PublishOutput" `
-          --self-contained
+          /p:EmbedAssembliesIntoApk=true
         
         Write-Host "Release Build Completed"
         
-    - name: Find and Report APKs
+    - name: Detailed Directory Search
       run: |
-        Write-Host "Searching for APK files in all locations..."
+        Write-Host "Performing detailed search for APK files..."
         
-        $apkFiles = Get-ChildItem -Path . -Recurse -Include "*.apk" 
+        # Show all directories in the workspace
+        Write-Host "All directories in workspace:"
+        Get-ChildItem -Directory -Path . -Recurse -Depth 2 | Select-Object -ExpandProperty FullName
         
-        if ($apkFiles.Count -eq 0) {
-            Write-Host "No APK files found! Checking build logs..."
-        } else {
+        # Search for APK files with full details
+        $apkFiles = Get-ChildItem -Path . -Recurse -Include "*.apk" -ErrorAction SilentlyContinue
+        
+        if ($apkFiles -and $apkFiles.Count -gt 0) {
             Write-Host "Found $($apkFiles.Count) APK files:"
-            $apkFiles | ForEach-Object { Write-Host "  - $($_.FullName)" }
+            $apkFiles | ForEach-Object { 
+                Write-Host "- $($_.FullName)"
+                Write-Host "  Size: $($_.Length) bytes"
+                Write-Host "  Created: $($_.CreationTime)"
+            }
+            
+            # Copy all APKs to a central location for easier upload
+            $collectDir = "collected-apks"
+            New-Item -ItemType Directory -Path $collectDir -Force
+            $apkFiles | ForEach-Object {
+                $destFile = Join-Path -Path $collectDir -ChildPath $_.Name
+                Copy-Item -Path $_.FullName -Destination $destFile
+                Write-Host "Copied to: $destFile"
+            }
+        } else {
+            Write-Host "No APK files found in the workspace!"
+            
+            # Search for build output files as a fallback
+            Write-Host "Searching for any build output files..."
+            Get-ChildItem -Path . -Include "*.dll","*.exe" -Recurse -Depth 3 -ErrorAction SilentlyContinue | 
+                Select-Object -First 10 | ForEach-Object {
+                    Write-Host "Build artifact: $($_.FullName)"
+                }
         }
-        
-        # Check specific publish output location
-        if (Test-Path "WoWonder/bin/Release/PublishOutput") {
-            Write-Host "Contents of publish output directory:"
-            Get-ChildItem -Path "WoWonder/bin/Release/PublishOutput" -Recurse | ForEach-Object { Write-Host "  - $($_.FullName)" }
-        }
-        
-        # Check working directory for final files
-        Write-Host "Contents of current directory:"
-        Get-ChildItem -Path . -Depth 1 | ForEach-Object { Write-Host "  - $($_.FullName)" }
-        
-    - name: Upload All APKs
+    
+    - name: Upload from collected location
       uses: actions/upload-artifact@v3
       with:
         name: android-apks
+        path: collected-apks
+        if-no-files-found: warn
+        
+    - name: Upload from output directory
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-output
+        path: build-output
+        if-no-files-found: warn
+        
+    - name: Upload any APK found anywhere
+      uses: actions/upload-artifact@v3
+      with:
+        name: all-apk-files
         path: |
           **/*.apk
-          WoWonder/bin/Release/PublishOutput/**/*.apk
-          WoWonder/bin/Release/net8.0-android/**/*.apk
-          WoWonder/bin/Release/net8.0-android/**/android-*.apk
         if-no-files-found: warn
