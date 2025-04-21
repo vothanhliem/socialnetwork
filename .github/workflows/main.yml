@@ -33,13 +33,20 @@ jobs:
         shell: pwsh
         run: |
           Write-Host "Setting JAVA_TOOL_OPTIONS to increase heap size..."
-          $env:JAVA_TOOL_OPTIONS = "-Xmx4096m"
+          $env:JAVA_TOOL_OPTIONS = "-Xmx8192m"
+
+      # Bước 2.2: Cài đặt các thư viện Android SDK tùy chọn
+      - name: Install Missing Android SDK Libraries
+        shell: pwsh
+        run: |
+          Write-Host "Installing missing Android SDK libraries..."
+          & "${env:ANDROID_HOME}\cmdline-tools\latest\bin\sdkmanager.bat" "platforms;android-34" "platform-tools" "build-tools;34.0.0" "extras;android;m2repository" "extras;google;m2repository"
 
       # Bước 3: Cài đặt .NET SDK (Nếu cần phiên bản cụ thể, nếu không máy ảo thường có sẵn)
-      # - name: Setup .NET SDK
-      #   uses: actions/setup-dotnet@v4
-      #   with:
-      #     dotnet-version: '6.0.x' # Thay bằng phiên bản .NET bạn cần
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '6.0.x' # Thay bằng phiên bản .NET bạn cần
       
       # *** BƯỚC THÊM VÀO: Thiết lập MSBuild ***
       - name: Setup MSBuild
@@ -84,7 +91,7 @@ jobs:
         run: |
           if (Test-Path "${{ github.workspace }}/WoWonder/WoWonder.csproj") {
             Write-Host "Building WoWonder Android project..."
-            msbuild /p:Configuration=Release /p:Platform="Any CPU" /t:PackageForAndroid "${{ github.workspace }}/WoWonder/WoWonder.csproj"
+            msbuild /p:Configuration=Release /p:Platform="Any CPU" /p:JavaMaximumHeapSize=4G /t:PackageForAndroid "${{ github.workspace }}/WoWonder/WoWonder.csproj"
           } else {
             Write-Host "WoWonder.csproj not found. Skipping build."
           }

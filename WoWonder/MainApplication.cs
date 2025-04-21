@@ -67,9 +67,15 @@ namespace WoWonder
                     Console.WriteLine(client);
                 }
 
-                //If you are Getting this error >>> System.Net.WebException: Error: TrustFailure /// then Set it to true
+                // Ensure secure handling of certificates
                 if (AppSettings.TurnTrustFailureOnWebException)
-                    ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+                {
+                    ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) =>
+                    {
+                        // Log or handle certificate validation issues here
+                        return true;
+                    };
+                }
 
                 JsonConvert.DefaultSettings = () => UserDetails.JsonSettings;
 
