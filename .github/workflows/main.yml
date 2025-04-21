@@ -45,8 +45,8 @@ jobs:
       # Bước 5: Build dự án Android
       # *** SỬA LẠI ĐƯỜNG DẪN VÀ CHỌN MỘT TARGET ***
       - name: Build Android project
-        # Set working directory and use relative path for csproj
-        working-directory: Script\WoWonder
+        # Set working directory using forward slashes and use relative path for csproj
+        working-directory: Script/WoWonder
         run: msbuild WoWonder.csproj /p:Configuration=Release /t:PackageForAndroid
         # Hoặc nếu bạn ĐÃ cấu hình signing và muốn ký luôn:
         # run: msbuild WoWonder.csproj /p:Configuration=Release /t:SignAndroidPackage
@@ -58,6 +58,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-app
-          # Path relative to the workspace root
-          path: Script\WoWonder\bin\Release\*.apk # Hoặc *.aab
+          # Path relative to the workspace root, using forward slashes
+          path: Script/WoWonder/bin/Release/*.apk # Hoặc *.aab
 
