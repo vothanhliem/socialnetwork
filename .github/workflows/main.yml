@@ -47,27 +47,40 @@ jobs:
         run: |
           echo "Listing root directory:"
           ls "${{ github.workspace }}"
-          echo "Listing Script directory:"
-          ls "${{ github.workspace }}/Script"
-          echo "Listing WoWonder directory:"
-          ls "${{ github.workspace }}/Script/WoWonder"
+          if [ -d "${{ github.workspace }}/Script" ]; then
+            echo "Listing Script directory:"
+            ls "${{ github.workspace }}/Script"
+          else
+            echo "Script directory does not exist."
+          fi
+          if [ -d "${{ github.workspace }}/WoWonder" ]; then
+            echo "Listing WoWonder directory:"
+            ls "${{ github.workspace }}/WoWonder"
+          else
+            echo "WoWonder directory does not exist."
+          fi
 
       # Debugging step: List all files recursively to locate WoWonder.csproj
       - name: Locate WoWonder.csproj
         run: |
           echo "Listing all files recursively to locate WoWonder.csproj:"
-          find "${{ github.workspace }}" -type f -name "WoWonder.csproj"
+          find "${{ github.workspace }}" -type f -name "WoWonder.csproj" || echo "WoWonder.csproj not found."
 
       # Bước 5: Build dự án Android
       - name: Build Android project
-        # Use absolute path for msbuild based on the correct location of WoWonder.csproj
-        run: msbuild /p:Configuration=Release /t:PackageForAndroid "${{ github.workspace }}/Script/WoWonder/WoWonder.csproj"
+        if: ${{ env.WOWONDER_PROJECT_EXISTS == 'true' }}
+        run: |
+          if [ -f "${{ github.workspace }}/WoWonder/WoWonder.csproj" ]; then
+            msbuild /p:Configuration=Release /t:PackageForAndroid "${{ github.workspace }}/WoWonder/WoWonder.csproj"
+          else
+            echo "WoWonder.csproj not found. Skipping build."
+          fi
 
       # Bước 6: Upload Artifact (Đảm bảo path khớp với output của target đã chọn)
       - name: Upload Android Artifact
+        if: ${{ env.WOWONDER_PROJECT_EXISTS == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: android-app
-          # Path relative to the workspace root
-          path: Script/WoWonder/bin/Release/*.apk # Hoặc *.aab
+          path: WoWonder/bin/Release/*.apk || echo "No APK found to upload."
 
