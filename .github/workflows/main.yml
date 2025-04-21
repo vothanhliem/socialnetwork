@@ -33,6 +33,10 @@ jobs:
       #   uses: actions/setup-dotnet@v4
       #   with:
       #     dotnet-version: '6.0.x' # Thay bằng phiên bản .NET bạn cần
+      
+      # *** BƯỚC THÊM VÀO: Thiết lập MSBuild ***
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2 # Kiểm tra phiên bản mới nhất nếu cần
 
       # Bước 4: Khôi phục các gói NuGet
       # Thay 'YourSolution.sln' bằng tên file solution của bạn
