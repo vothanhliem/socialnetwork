@@ -1,0 +1,39 @@
+name: Android Build
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build APK
+      run: dotnet build WoWonder/WoWonder.csproj -c Release
+      
+    - name: List output directory
+      run: Get-ChildItem -Recurse WoWonder/bin/Release/net8.0-android
+      
+    - name: Upload APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: apk-files
+        path: |
+          WoWonder/bin/Release/net8.0-android/**/*.apk
+          WoWonder/bin/Release/net8.0-android/android-arm64/**/*.apk
+          WoWonder/bin/Release/net8.0-android/android-arm/**/*.apk
+        if-no-files-found: warn
