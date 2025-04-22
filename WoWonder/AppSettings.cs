@@ -18,13 +18,13 @@ namespace WoWonder
         /// you should add your website without http in the analytic.xml file >> ../values/analytic.xml .. line 5
         /// <string name="ApplicationUrlWeb">demo.wowonder.com</string>
         /// </summary>
-        public static readonly string TripleDesAppServiceProvider = "aES+smXZ5GHmSvv3nfN/0CHArzg9PsMbD5RAiU1je3dhKuhZo1xmE8usJ77pE9yOhEkCJl3p+FBlXCcSLJO1R7KIgioahtB29OgWZLndX+3XnKy4GqOrnnzR7e+cTZTnakIwqDKYB8OGSdwB1fIDEIDukvk9dQPusCJucjGFygO+LImH51oX4mzlXb34TZELrseUPXf1hmeMvEf4OIcAT2wd41c8WwmewS6gYCVwyTHqJfYxIL8McQ9G8HQgyRv5Wy4uivkCBT3CqpQM9IIrQcC1dthZMPUUNbynvkcNtNeNEo96w4w3PPYFKh4XT+EqZQKBOiNoQYhiMcU5hcHKi2qP0aiPlyHxvQS4RRaWoV0+CF9gii3wGtAO3pw5NOsoAMNNKR+wKZpLSKZc8GP2KQEqYbBbI7NXl1k3Tm8HTrU7ybkjm7MscWlOcSl73BUah+UOkns3jfcuIiVARKRyqUkXe2qGWcAMPapy8qKRcLclpzxWkD3O8Ua1vWRNALATYzXLzXzgO50Wg6X/k6DokIbJDE0ILK54R2V0/O2dC9cvgHF5fNQj2XMqHe/m41wIfW9riHa/o99YWcxRcVekFiDh4ncLBVN236zpaIBjFD2Nw5cvHu1NOD0Mrpp54CSLTF05R0JnyE7EpyjRDwrdFeCQAGITE72fV9HEmcYvpaCVm+0o9kd9KtoLkGB7wHj7GYqQjCwSU8rxUyqinB582iece7BNIHaZc3HzxKOTfypRv7r5KEWUwq/D1S4XcbDKEikhQG5wx+PA3L1bZgGs39EaBG+2m5DwZhVfWqUzuNbKndvn5KV0FbZf/AyH3GrH2QZas/RhqQynrNs4JjL1J5k4VvgZtGdsEpJzgk3Ez4g8ubBA2zhUd6ukN3s+aoynRwqgEDPx8apLSND9TH6wNGDsjKiB1wWT28OspfOVqnoNwsFBt08tQSATlg9ehrGeEeolwubX7hkCjO7sfZ75piyhwXr23emYLSMTg/b9LuU6lzf7NUX0s+Hyb4ZTezaXWHlqD2gcIITOT7rfcJ4mw8iGEsP3gzRe5emNIDFcEEWZF2OIYX+etRJ3MnZAze5szAQoLvey1OmJa4IpU3R6kDobqwsQtyGZXopOHYihKFCXv/2KIwSgCjuPGJLaw+YXPztbbjJH81MkZl/1RCBtJpG5MmS4Si7SPVAE7pb1LaiN4ilN3jCljywLLnukyV3H0rOL68+2aRr5joQ4w9BZlYwjM5SaUGiwgV5CKhRdZXH8VFHtC+JhjgVAL0VFK5fxNLEi1Ydcs4+FNxjMAIVY+SG9PFqojYx50ZrpqccSBjcG2w9Mg6aaMEhdGq8B3wnpPMvVfSycL5+KqMI8wLz/ZKckLogtpaCmupPX4IbiRNNjIMJOwNKRgbt9ABghPcNR6bQbQZvQXX7OmcY3ArphJaeMdWSkIN2kvEfEEIHDRV1x1BUlO1vop4WHkNDsWb6IMxNp+fh3TaCk0GPJAkJ8gO8vUORiEEgL6/3X3uXsn1HyaL3jFRri9XEMAgsErpk7zeRvqzLDT/6Gkib+DPPntm4D085fPq3mXW4tF5pP7OE=";
-
+        // public static readonly string TripleDesAppServiceProvider = "aES+smXZ5GHmSvv3nfN/0CHArzg9PsMbD5RAiU1je3dhKuhZo1xmE8usJ77pE9yOhEkCJl3p+FBlXCcSLJO1R7KIgioahtB29OgWZLndX+3XnKy4GqOrnnzR7e+cTZTnakIwqDKYB8OGSdwB1fIDEIDukvk9dQPusCJucjGFygO+LImH51oX4mzlXb34TZELrseUPXf1hmeMvEf4OIcAT2wd41c8WwmewS6gYCVwyTHqJfYxIL8McQ9G8HQgyRv5Wy4uivkCBT3CqpQM9IIrQcC1dthZMPUUNbynvkcNtNeNEo96w4w3PPYFKh4XT+EqZQKBOiNoQYhiMcU5hcHKi2qP0aiPlyHxvQS4RRaWoV0+CF9gii3wGtAO3pw5NOsoAMNNKR+wKZpLSKZc8GP2KQEqYbBbI7NXl1k3Tm8HTrU7ybkjm7MscWlOcSl73BUah+UOkns3jfcuIiVARKRyqUkXe2qGWcAMPapy8qKRcLclpzxWkD3O8Ua1vWRNALATYzXLzXzgO50Wg6X/k6DokIbJDE0ILK54R2V0/O2dC9cvgHF5fNQj2XMqHe/m41wIfW9riHa/o99YWcxRcVekFiDh4ncLBVN236zpaIBjFD2Nw5cvHu1NOD0Mrpp54CSLTF05R0JnyE7EpyjRDwrdFeCQAGITE72fV9HEmcYvpaCVm+0o9kd9KtoLkGB7wHj7GYqQjCwSU8rxUyqinB582iece7BNIHaZc3HzxKOTfypRv7r5KEWUwq/D1S4XcbDKEikhQG5wx+PA3L1bZgGs39EaBG+2m5DwZhVfWqUzuNbKndvn5KV0FbZf/AyH3GrH2QZas/RhqQynrNs4JjL1J5k4VvgZtGdsEpJzgk3Ez4g8ubBA2zhUd6ukN3s+aoynRwqgEDPx8apLSND9TH6wNGDsjKiB1wWT28OspfOVqnoNwsFBt08tQSATlg9ehrGeEeolwubX7hkCjO7sfZ75piyhwXr23emYLSMTg/b9LuU6lzf7NUX0s+Hyb4ZTezaXWHlqD2gcIITOT7rfcJ4mw8iGEsP3gzRe5emNIDFcEEWZF2OIYX+etRJ3MnZAze5szAQoLvey1OmJa4IpU3R6kDobqwsQtyGZXopOHYihKFCXv/2KIwSgCjuPGJLaw+YXPztbbjJH81MkZl/1RCBtJpG5MmS4Si7SPVAE7pb1LaiN4ilN3jCljywLLnukyV3H0rOL68+2aRr5joQ4w9BZlYwjM5SaUGiwgV5CKhRdZXH8VFHtC+JhjgVAL0VFK5fxNLEi1Ydcs4+FNxjMAIVY+SG9PFqojYx50ZrpqccSBjcG2w9Mg6aaMEhdGq8B3wnpPMvVfSycL5+KqMI8wLz/ZKckLogtpaCmupPX4IbiRNNjIMJOwNKRgbt9ABghPcNR6bQbQZvQXX7OmcY3ArphJaeMdWSkIN2kvEfEEIHDRV1x1BUlO1vop4WHkNDsWb6IMxNp+fh3TaCk0GPJAkJ8gO8vUORiEEgL6/3X3uXsn1HyaL3jFRri9XEMAgsErpk7zeRvqzLDT/6Gkib+DPPntm4D085fPq3mXW4tF5pP7OE=";
+        public static readonly string TripleDesAppServiceProvider = "aES+smXZ5GHmSvv3nfN/0CHArzg9PsMbD5RAiU1je3eax/YUNjiroyg53f7fSMHHzC5FIN2p5ilY2uk+38WIaboSkuPVYCmttvdP7iKuC2EUTEnCIMRosXjBGKLqf8YgWOJkJa+GHFseV5fduLDsW4Dukvk9dQPuaXSJlvym0hsPYX+eL96GL5z1nTMq5alW6PUpvMu3RXgXkaaxbnYvCH7BktXZVA7tHOBkx4PfBRJRW7PTu7KbXNqlw22KEJH3iNPYz6mdAZVGSCKjqNb53EL7x45Zhf/DSMXZXX2WQMAk03+XW4kREdHk9yGQEMPHlRhk16UuVjARzgL80TDMuj2iOnbABHEtbFLLsBo2i73uskHuKIESgjVkpQEyKOp4dqds9rhVWS6XU56blroDn67O0c2BsqQS94N86h47jq4wXJA9atpxWaHI4jFhwfPLw20XOYiaOkc9CuUu8PId+UdiG9yTBj5SYcEwWxm9O2anG1mc40NuSomMvyzvHLfQ63ebfKnB3OtDRXllq+zSYjJ46qBkM5xmCcCzibQ0BEaNGJhDLWNcKCmZ8UqdmGgRqZW87AFsxlmuvfmiqS+/mWRBRoZ0xGIouZorHjiQp37yLzG7Wsm4kO8e818JcYucD0qFULXzNUk3AQrkpnqO9MmN8scTRmKbFgeHHAfkQ3qX5eSf/d4l1wTkhwmq4NaxBgWsddz9qrLNqtwRHGi8eFc1TxRwPBCs8HXqzx/wkPSIPF7IXj5e5NyFpAS1U8F8xXCGpmmNLgcvCzyPxT/94WCnsFSVCh1IBho6tRxDUGsYCTYdgHcJbnquaruymguwfmzvtiMsWFsXiF1S/7LPxlIrsdE6g0FBUqqMy3POnfZcV9I6m5gcVcGEWkKPW75bOnc5XdnGkkcLImTjCLd0H3A2oBY/2orCNs/woD2zmahX4j4ODbqUHHZi6YZfuT1uiZsIfSyF6fxSguMdexigPryctPDHOG7LURHysR8Qdk9hfEDYs9gkGRmLX0pE79bHZBboWOdY+oLRV4EB1n/pOknGqQ7oW+CmK+Ukd83MxedTtVzjF95psTl6YH+9PH4yyGru5LywS+A6r/Findw7z/YwhRO57FI57Nh0DHrNijPRefumqVG27y5b6HtALAtXEedP8g2mwE4vbC3myS6g4Pi5WH6qhn8oOH/mCQMksA0MCWAfUvXq3bQO51h/WG3covCFJVVAb2d3kX0tNJoujtmWgYQFQ/t23URP1CmMMIs99ZmzDE7NiYXPNasdGJ5nflHuVKrB9BZRT8QWympbynTo+Eyt0HqwcWMguQDcElf2Pemj6Mum8tY3PKXCjwHYG2ue/Hi120eVlEzTzxZkfc76bpk070/JILaoYVHtrheowCOd+WVSpF1uLReaT+zh";
         //Main Settings >>>>>
         //*********************************************************
         public static string Version = "6.1";
-        public static readonly string ApplicationName = "WoWonder Timeline";
-        public static readonly string DatabaseName = "WowonderSocial";
+        public static readonly string ApplicationName = "Social BSGĐ";
+        public static readonly string DatabaseName = "socialbsgd";
 
         // Friend system = 0 , follow system = 1
         public static readonly int ConnectivitySystem = 1;
@@ -42,7 +42,7 @@ namespace WoWonder
 
         //Main Colors >>
         //*********************************************************
-        public static readonly string MainColor = "#A52729";
+        public static readonly string MainColor = "#47e707";
 
         //Language Settings >> http://www.lingoes.net/en/translator/langcode.htm
         //*********************************************************
@@ -55,7 +55,7 @@ namespace WoWonder
         public static readonly Dictionary<string, string> LanguageList = new Dictionary<string, string>()
         {
             {"en", "English"},
-            {"ar", "Arabic"},
+            {"vn", "Việt Nam"},
         };
 
         //Error Report Mode
@@ -65,7 +65,7 @@ namespace WoWonder
         //Notification Settings >>
         //*********************************************************
         public static bool ShowNotification = true;
-        public static string OneSignalAppId = "64974c58-9993-40ed-b782-0814edc401ea";
+        public static string OneSignalAppId = "ca830e35-bb6f-4527-a4cd-8f89443a7c2e";
 
         // WalkThrough Settings >>
         //*********************************************************
@@ -75,7 +75,7 @@ namespace WoWonder
         //*********************************************************
         public static readonly bool MessengerIntegration = true;
         public static readonly bool ShowDialogAskOpenMessenger = false;
-        public static readonly string MessengerPackageName = "com.wowonderandroid.messenger"; //APK name on Google Play
+        public static readonly string MessengerPackageName = "vn.bsgdtphcm.social"; //APK name on Google Play
 
         //AdMob >> Please add the code ad in the Here and analytic.xml 
         //*********************************************************
@@ -91,19 +91,19 @@ namespace WoWonder
         public static readonly int ShowAdNativeReelsCount = 4;
         public static readonly int ShowAdAppOpenCount = 3;
 
-        public static readonly bool ShowAdMobBanner = true;
-        public static readonly bool ShowAdMobInterstitial = true;
-        public static readonly bool ShowAdMobRewardVideo = true;
-        public static readonly bool ShowAdMobNative = true;
-        public static readonly bool ShowAdMobNativePost = true;
-        public static readonly bool ShowAdMobAppOpen = true;
-        public static readonly bool ShowAdMobRewardedInterstitial = true;
+        public static readonly bool ShowAdMobBanner = false;
+        public static readonly bool ShowAdMobInterstitial = false;
+        public static readonly bool ShowAdMobRewardVideo = false;
+        public static readonly bool ShowAdMobNative = false;
+        public static readonly bool ShowAdMobNativePost = false;
+        public static readonly bool ShowAdMobAppOpen = false;
+        public static readonly bool ShowAdMobRewardedInterstitial = false;
 
-        public static readonly string AdInterstitialKey = "ca-app-pub-5135691635931982/3584502890";
-        public static readonly string AdRewardVideoKey = "ca-app-pub-5135691635931982/2518408206";
-        public static readonly string AdAdMobNativeKey = "ca-app-pub-5135691635931982/2280543246";
-        public static readonly string AdAdMobAppOpenKey = "ca-app-pub-5135691635931982/2813560515";
-        public static readonly string AdRewardedInterstitialKey = "ca-app-pub-5135691635931982/7842669101";
+        public static readonly string AdInterstitialKey = "";
+        public static readonly string AdRewardVideoKey = "";
+        public static readonly string AdAdMobNativeKey = "";
+        public static readonly string AdAdMobAppOpenKey = "";
+        public static readonly string AdRewardedInterstitialKey = "";
 
         //FaceBook Ads >> Please add the code ad in the Here and analytic.xml 
         //*********************************************************
@@ -113,23 +113,23 @@ namespace WoWonder
         public static readonly bool ShowFbNativeAds = false;
 
         //YOUR_PLACEMENT_ID
-        public static readonly string AdsFbBannerKey = "250485588986218_554026418632132";
-        public static readonly string AdsFbInterstitialKey = "250485588986218_554026125298828";
-        public static readonly string AdsFbRewardVideoKey = "250485588986218_554072818627492";
-        public static readonly string AdsFbNativeKey = "250485588986218_554706301897477";
-
+        public static readonly string AdsFbBannerKey = "";
+        public static readonly string AdsFbInterstitialKey = "";
+        public static readonly string AdsFbRewardVideoKey = "";
+        public static readonly string AdsFbNativeKey = "";
+         
         //Ads AppLovin >> Please add the code ad in the Here 
         //*********************************************************  
         public static readonly bool ShowAppLovinBannerAds = false;
         public static readonly bool ShowAppLovinInterstitialAds = false;
         public static readonly bool ShowAppLovinRewardAds = false;
 
-        public static readonly string AdsAppLovinBannerId = "93a37dd25bd3f699";
-        public static readonly string AdsAppLovinInterstitialId = "5fec6909ce79fb49";
-        public static readonly string AdsAppLovinRewardedId = "3fdddf11aca6ce57";
+        public static readonly string AdsAppLovinBannerId = "";
+        public static readonly string AdsAppLovinInterstitialId = "";
+        public static readonly string AdsAppLovinRewardedId = "";
         //********************************************************* 
 
-        public static readonly bool EnableRegisterSystem = true;
+        public static readonly bool EnableRegisterSystem = false;
 
         public static readonly bool ShowBirthdayInRegister = false;
 
@@ -160,7 +160,7 @@ namespace WoWonder
         public static readonly bool ShowFacebookLogin = true;
         public static readonly bool ShowGoogleLogin = true;
 
-        public static readonly string ClientId = "430795656343-679a7fus3pfr1ani0nr0gosotgcvq2s8.apps.googleusercontent.com";
+        public static readonly string ClientId = "469121631567-8a80pijt72g8l5797bq2hasn3hqiqcvm.apps.googleusercontent.com";
 
         //########################### 
 
@@ -234,7 +234,7 @@ namespace WoWonder
         public static readonly string HostCoronaVirus = "covid-193.p.rapidapi.com";
 
         public static readonly bool ShowLive = true;
-        public static readonly string AppIdAgoraLive = "7f1cb06a3b4d4e84965ea6d3b3e16a8a";
+        public static readonly string AppIdAgoraLive = "619ee4ec26334d2dae20e52d1abbb32e";
 
         //Events settings
         //*********************************************************  
@@ -262,7 +262,7 @@ namespace WoWonder
         /// https://dashboard.stipop.io/
         /// you can get api key from here https://prnt.sc/26ofmq9
         /// </summary>
-        public static readonly string StickersApikey = "950a22e795ca1f047842854e3305a5df";
+        public static readonly string StickersApikey = "94fdd66ca85c184583c4efad6be358cc";
 
         //*********************************************************
 
@@ -511,8 +511,8 @@ namespace WoWonder
         public static readonly bool ShowPaypal = true;
         public static readonly string MerchantAccountId = "test";
 
-        public static readonly string SandboxTokenizationKey = "sandbox_cs5chhwp_hf4ccmn4t******";
-        public static readonly string ProductionTokenizationKey = "production_t2wns2y2_dfy45jdj3dxkmz5m";
+        public static readonly string SandboxTokenizationKey = "sandbox_kt2f6mdh_hf4ccmn4t7s******";
+        public static readonly string ProductionTokenizationKey = "production_t2wns2y2_dfy45******";
 
         public static readonly bool ShowCreditCard = true;
         public static readonly bool ShowBankTransfer = true;

@@ -2,7 +2,7 @@
 <resources>
 
 	<!--add your website without http >> demo.wowonder.com-->
-	<string name="ApplicationUrlWeb">demo.wowonder.com</string>
+	<string name="ApplicationUrlWeb">social.bsgdtphcm.vn</string>
 
 	<!-- #warning about new privacy on google AdMob...
 	should add file app-ads.txt in the server >>this content file text https://prnt.sc/vm086w
@@ -15,20 +15,20 @@
 	<!--===============================================================-->
 
 	<!--facebook ID-->
-	<string name="facebook_app_id">1274586783322090</string>
-	<string name="fb_login_protocol_scheme">fb1274586783322090</string>
+	<string name="facebook_app_id">241704557015396</string>
+	<string name="fb_login_protocol_scheme">fb241704557015396</string>
 	<!--https://developers.facebook.com/docs/android/getting-started#client-token-->
-	<string name="facebook_client_token">6397b7d5071e289a3de811808d4543cb</string>
+	<string name="facebook_client_token">9e176f55d55d13330635357b9a3331e8</string>
 	<string name="icon_desc">Ad icon</string>
 	<string name="image_desc">Ad image</string>
 	<string name="sponsored">Sponsored</string>
 	<!--===============================================================-->
 
 	<!--google ID >> Google Login - Map - YouTube Player  https://prnt.sc/vysrsw -->
-	<string name="google_key">AIzaSyBKeZe5l_7w6gOkDL_Nm5lIR8FDD7WRLKM</string> 
+	<string name="google_key">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</string>
 
 	<!-- https://developers.google.com/maps/documentation/maps-static/intro -->
-	<string name="google_maps_key">AIzaSyBKeZe5l_7w6gOkDL_Nm5lIR8FDD7WRLKM</string>
+	<string name="google_maps_key">AIzaSyBsnP0eVjjm7RfqaKfm-Ha8Opth_as44KY</string>
 
 	<string name="razorpay_api_Key">rzp_test_ruzI7R7AkonOIi</string>
 

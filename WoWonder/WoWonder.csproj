@@ -5,12 +5,12 @@
 		<OutputType>Exe</OutputType>
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<ApplicationId>com.wowondertimeline.app</ApplicationId>
+		<ApplicationId>vn.bsgdtphcm.social</ApplicationId>
 		<ApplicationVersion>1</ApplicationVersion>
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<Copyright>Copyright © 2025</Copyright>
+		<Copyright>bản quyền © 2025</Copyright>
 		<AndroidSigningKeyStore>KeyApk\WoWonder.keystore</AndroidSigningKeyStore>
-		<Title>WoWonder</Title>
+		<Title>Social BSGĐ</Title>
 		<JavaMaximumHeapSize>4G</JavaMaximumHeapSize>
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
 		<RuntimeIdentifiers>android-arm;android-arm64</RuntimeIdentifiers>

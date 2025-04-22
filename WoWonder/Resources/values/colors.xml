@@ -14,7 +14,7 @@
 	<color name="primaryLight">#F2CFD3</color>
 	<color name="accentLight">#F2CFD3</color>
 
-	<color name="bgApp_color">#F6ECEC</color>
+	<color name="bgApp_color">#ececf6</color>
 	<color name="bgApp_Dark_color">#292D32</color>
  
 	<color name="shimmerColor">#C2C2C2</color>
@@ -37,7 +37,7 @@
 	<color name="textDark_color">#444</color>
 	<color name="text_color_in_between">#888888</color>
 
-	<color name="LightColor">#efefef</color>
+	<color name="lightcolor">#efefef</color>
 	<color name="anderblack_color">#ffefefef</color>
 
 	<color name="lightPrimary">#B3E5FC</color>
@@ -76,12 +76,12 @@
 	<color name="gnt_black">#000000</color>
 	<color name="gnt_white">#FFFFFF</color>
 	<color name="gnt_red">#FF0000</color>
-	<color name="gnt_green">#2E7D32</color>
+	<color name="gnt_green">#388E3C</color>
 	<color name="gnt_blue">#4285f4</color>
 	<color name="gnt_ad_green">#3A6728</color>
 	<color name="gnt_gray">#808080</color>
 	<color name="gnt_grayLight">#d9d9d9</color>
-	<color name="gnt_outline">#efefef</color>
+	<color name="gnt_outline">#E0E0E0</color>
 
 	<color name="background_First_Layout_startColor">#777777</color>
 	<color name="background_First_Layout_centerColor">#888888</color>
@@ -127,5 +127,6 @@
 	<color name="bgColor">#313638</color>
 	<color name="lite_transparent">#1A000000</color>
 	<color name="line_color">#88cbcbcb</color>
+	<color name="LightColor">#efefef</color>
 
 </resources>

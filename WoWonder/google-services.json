@@ -1,38 +1,38 @@
 {
   "project_info": {
-    "project_number": "430795656343",
-    "firebase_url": "https://wowonder-timeline.firebaseio.com",
-    "project_id": "wowonder-timeline",
-    "storage_bucket": "wowonder-timeline.firebasestorage.app"
+    "project_number": "476554366734",
+    "firebase_url": "https://socialbsgd.firebaseio.com",
+    "project_id": "socialbsgd",
+    "storage_bucket": "socialbsgd.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:430795656343:android:06bbbfa1c166d095832dd2",
+        "mobilesdk_app_id": "1:476554366734:android:eb6a67708e5e53d68a915f",
         "android_client_info": {
-          "package_name": "com.wowondertimeline.app"
+          "package_name": "vn.bsgdtphcm.social"
         }
       },
       "oauth_client": [
         {
-          "client_id": "430795656343-ieoda9jjr4fpkdaeqcgufjdu264sdntl.apps.googleusercontent.com",
+          "client_id": "476554366734-i7941quasu4667obbs3qrajisb9ogs2r.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "com.wowondertimeline.app",
+            "package_name": "vn.bsgdtphcm.social",
             "certificate_hash": "6775bca90428b86dbc119f508a61e5de039047c7"
           }
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBYHCzTgtSeree4EjrBHMldLm6ShnCnVD4"
+          "current_key": "AIzaSyBTt9HZxeOcdOPcoj74D-wJhvQRAGte_1s"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "430795656343-679a7fus3pfr1ani0nr0gosotgcvq2s8.apps.googleusercontent.com",
+              "client_id": "476554366734-i7941quasu4667obbs3qrajisb9ogs2r.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
