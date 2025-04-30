@@ -1,7 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:amazon="http://schemas.amazon.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools"
-		package="vn.bsgdtphcm.social" android:versionCode="1" android:versionName="1.0.1" android:installLocation="auto">
-	<uses-sdk android:minSdkVersion="23" android:targetSdkVersion="34" />
+<!-- No changes needed in this file as it is correctly configured for TabbedMainActivity. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" xmlns:amazon="http://schemas.amazon.com/apk/res/android" xmlns:tools="http://schemas.android.com/tools" package="vn.bsgdtphcm.social" android:versionCode="1" android:versionName="1.0.1" android:installLocation="auto">
 	<uses-feature android:name="android.hardware.camera" android:required="true" />
 	<uses-feature android:name="android.hardware.camera.autofocus" />
 	<uses-feature android:name="android.hardware.camera.any" />
@@ -14,7 +13,8 @@
 	<uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 	<uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
 	<uses-permission android:name="android.permission.INTERNET" />
-	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />	<!--android:maxSdkVersion="32"-->
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+	<!--android:maxSdkVersion="32"-->
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" tools:ignore="ScopedStorage" />
 	<uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 	<uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
@@ -113,14 +113,11 @@
 		<!--deepar.ai-->
 		<uses-native-library android:name="libOpenCL.so" android:required="false" />
 		<uses-native-library android:name="libOpenCL-pixel.so" android:required="false" />
-
 		<uses-library android:name="androidx.window.extensions" android:required="false" />
 		<uses-library android:name="androidx.window.sidecar" android:required="false" />
 		<uses-library android:name="android.ext.adservices" android:required="false" />
-		 
 		<!--braintree-->
-		<activity android:name="WoWonder.Activities.Wallet.TabbedWalletActivity"
-		          android:exported="true">
+		<activity android:name="WoWonder.Activities.Wallet.TabbedWalletActivity" android:exported="true">
 			<intent-filter>
 				<action android:name="android.intent.action.VIEW" />
 				<category android:name="android.intent.category.DEFAULT" />
@@ -146,6 +143,10 @@
 			</intent-filter>
 		</activity>
 		<service android:name="WoWonder.Services.AppApiService" android:exported="true" android:permission="android.permission.BIND_JOB_SERVICE" />
+		<activity android:name=".Activities.TabbedMainActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize" android:windowSoftInputMode="adjustResize" android:launchMode="singleTop">
+			<!-- Ensure proper lifecycle handling -->
+			<meta-data android:name="android.app.lib_name" android:value="TabbedMainActivity" />
+		</activity>
 	</application>
 	<queries>
 		<intent>

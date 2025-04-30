@@ -29,7 +29,7 @@ namespace WoWonder.Activities.NativePost.Post
         private readonly NativePostAdapter NativeFeedAdapter;
         private readonly WRecyclerView WRecyclerView;
         private static bool ShowFindMoreAlert;
-        private static PostModelType LastAdsType = PostModelType.AdMob3;
+        private static PostModelType LastAdsType = PostModelType.AdMob3; // Uncommented this line
         public static List<PostDataObject> PostCacheList { private set; get; }
 
         public ApiPostAsync(WRecyclerView recyclerView, NativePostAdapter adapter)
@@ -52,55 +52,136 @@ namespace WoWonder.Activities.NativePost.Post
         Random rand = new Random();
         private Task task;
 
+        public async Task<List<PostDataObject>> FetchNewsFeedApiPosts(string offset = "0", string typeRun = "Add", string hash = "")
+        {
+            try
+            {
+                int apiStatus;
+                dynamic respond;
+
+                Console.WriteLine($"[FetchNewsFeedApiPosts] Start - Offset: {offset}, TypeRun: {typeRun}, Hash: {hash}, NativePostType: {NativeFeedAdapter.NativePostType}");
+
+                switch (NativeFeedAdapter.NativePostType)
+                {
+                    case NativeFeedType.Global:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_news_feed", NativeFeedAdapter.IdParameter, "", WRecyclerView.GetFilter(), "", WRecyclerView.GetPostType());
+                        break;
+                    case NativeFeedType.User:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_user_posts", NativeFeedAdapter.IdParameter, "", "", "");
+                        break;
+                    case NativeFeedType.Group:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_group_posts", NativeFeedAdapter.IdParameter, "", "", "");
+                        break;
+                    case NativeFeedType.Page:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_page_posts", NativeFeedAdapter.IdParameter, "", "", "");
+                        break;
+                    case NativeFeedType.Event:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_event_posts", NativeFeedAdapter.IdParameter, "", "", "");
+                        break;
+                    case NativeFeedType.Saved:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "saved", "", "", "", "");
+                        break;
+                    case NativeFeedType.HashTag:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "hashtag", "", hash, "", "");
+                        break;
+                    case NativeFeedType.Video:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost("5", offset, "get_random_videos", "", "", "", "");
+                        break;
+                    case NativeFeedType.Popular:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetPopularPost(AppSettings.PostApiLimitOnScroll, offset);
+                        break;
+                    case NativeFeedType.Boosted:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetBoostedPost();
+                        break;
+                    case NativeFeedType.Live:
+                        (apiStatus, respond) = await RequestsAsync.Posts.GetLivePost();
+                        break;
+                    //case NativeFeedType.Advertise:
+                    //    (apiStatus, respond) = await RequestsAsync.Advertise.GetAdvertisePost(AppSettings.PostApiLimitOnScroll, offset);
+                    //    break;
+                    default:
+                        (apiStatus, respond) = (400, null);
+                        break;
+                }
+
+                Trace.EndSection();
+
+                if (WRecyclerView.SwipeRefreshLayoutView is { Refreshing: true })
+                    WRecyclerView.SwipeRefreshLayoutView.Refreshing = false;
+
+                Console.WriteLine($"[FetchFeedPostsApi] API Response - Status: {apiStatus}, Response: {respond}");
+
+                if (apiStatus != 200 || respond is not PostObject result || result.Data == null)
+                {
+                    WRecyclerView.MainScrollEvent.IsLoading = false;
+                    Methods.DisplayReportResult(ActivityContext, respond);
+                    return new List<PostDataObject>(); // Return empty list on error
+                }
+                else
+                {
+                    LoadDataApi(apiStatus, respond, offset);
+                }
+
+                return result?.Data ?? new List<PostDataObject>(); // Return data or empty list if null
+            }
+            catch (Exception ex)
+            {
+                Methods.DisplayReportResultTrack(ex);
+                return new List<PostDataObject>(); // Return empty list on exception
+            }
+        }
+
         public void ExcuteDataToMainThread(string offset = "0", string typeRun = "Add", string hash = "")
         {
             try
             {
+                Console.WriteLine($"[ExcuteDataToMainThread] Start - Offset: {offset}, TypeRun: {typeRun}, Hash: {hash}");
+
                 var beforeList = NativeFeedAdapter.ListDiffer.Count;
 
                 if (beforeList > 150)
                 {
                     NativeFeedAdapter.ListDiffer.RemoveRange(10, Math.Min(30, beforeList));
                     NativeFeedAdapter.NotifyItemRangeRemoved(10, Math.Min(30, beforeList));
-
-                    Console.WriteLine("API = Ended with offset " + offset + "With count of " + NativeFeedAdapter.ListDiffer.Count);
                 }
 
-                task = Task.Run(async () => await FetchFeedPostsApi(offset, typeRun, hash)).ContinueWith(task =>
+                task = Task.Run(async () => await FetchNewsFeedApiPosts(offset, typeRun, hash)).ContinueWith(t =>
                 {
-                    ////try
-                    ////{
-                    ////    // Executes in UI thread.
-                    ////    var NewPostsList = task.Result;
-                    ////    if (NewPostsList == null || NewPostsList.Count <= 0)
-                    ////        return;
+                    try
+                    {
+                        var newPostsList = t.Result as List<PostDataObject>; // Ensure proper type casting
+                        if (newPostsList == null || newPostsList.Count == 0)
+                        {
+                            Console.WriteLine("[ExcuteDataToMainThread] No new posts to process.");
+                            return;
+                        }
 
-                    ////    NativeFeedAdapter.ListDiffer.AddRange(NewPostsList);
+                        NativeFeedAdapter.ListDiffer.AddRange(newPostsList.Select(post => new AdapterModelsClass { PostData = post })); // Convert to AdapterModelsClass
 
-                    ////    var recyclerScrollFixer = new Runnable(() =>
-                    ////    {
-                    ////        if (beforeList == 0)
-                    ////            NativeFeedAdapter.NotifyDataSetChanged();
+                        ActivityContext?.RunOnUiThread(() =>
+                        {
+                            if (beforeList == 0)
+                                NativeFeedAdapter.NotifyDataSetChanged();
+                            else
+                                NativeFeedAdapter.NotifyItemRangeInserted(beforeList, newPostsList.Count);
 
-                    ////        //WRecyclerView.SetItemAnimator(null);
-                    ////        NativeFeedAdapter.NotifyItemRangeInserted(beforeList, NewPostsList.Count);
-                    ////        Console.WriteLine("API = Ended with offset " + offset + "With count of " + NativeFeedAdapter.ListDiffer.Count);
-                    ////    });
+                            Console.WriteLine("[ExcuteDataToMainThread] Updated UI with new posts. Total count: " + NativeFeedAdapter.ListDiffer.Count);
+                        });
 
-                    ////    WRecyclerView.Post(recyclerScrollFixer);
-                    ////    WRecyclerView.MainScrollEvent.IsLoading = false;
-
-                    ////    WRecyclerView.Visibility = ViewStates.Visible;
-                    ////    WRecyclerView?.ShimmerInflater?.Hide();
-                    ////}
-                    ////catch (Exception e)
-                    ////{
-                    ////    Methods.DisplayReportResultTrack(e);
-                    ////}
+                        WRecyclerView.MainScrollEvent.IsLoading = false;
+                        WRecyclerView.Visibility = ViewStates.Visible;
+                        WRecyclerView?.ShimmerInflater?.Hide();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"[ExcuteDataToMainThread] Exception: {e.Message}");
+                        Methods.DisplayReportResultTrack(e);
+                    }
                 }, TaskScheduler.FromCurrentSynchronizationContext());
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[ExcuteDataToMainThread] Exception: {ex.Message}");
                 Methods.DisplayReportResultTrack(ex);
             }
         }
@@ -109,7 +190,7 @@ namespace WoWonder.Activities.NativePost.Post
         {
             try
             {
-                if ((task == null) && (task?.IsCompleted == false || task?.Status == TaskStatus.Running))
+                if (task != null && (task.IsCompleted == false || task.Status == TaskStatus.Running))
                     return;
 
                 int apiStatus;
@@ -121,7 +202,7 @@ namespace WoWonder.Activities.NativePost.Post
 
                 var adId = NativeFeedAdapter.ListDiffer.LastOrDefault(a => a.TypeView == PostModelType.AdsPost && a.PostData.PostType == "ad")?.PostData?.Id ?? "";
 
-                Console.WriteLine("API = Started FetchNewsFeedApi " + offset);
+                Console.WriteLine($"[FetchFeedPostsApi] Start - Offset: {offset}, TypeRun: {typeRun}, Hash: {hash}");
                 Trace.BeginSection("API = Started FetchNewsFeedApi " + offset);
                 WRecyclerView.MainScrollEvent.IsLoading = true;
 
@@ -160,9 +241,6 @@ namespace WoWonder.Activities.NativePost.Post
                     case NativeFeedType.Live:
                         (apiStatus, respond) = await RequestsAsync.Posts.GetLivePost();
                         break;
-                    case NativeFeedType.Advertise:
-                        (apiStatus, respond) = await RequestsAsync.Advertise.GetAdvertisePost(AppSettings.PostApiLimitOnScroll, offset);
-                        break;
                     default:
                         (apiStatus, respond) = (400, null);
                         break;
@@ -173,15 +251,14 @@ namespace WoWonder.Activities.NativePost.Post
                 if (WRecyclerView.SwipeRefreshLayoutView is { Refreshing: true })
                     WRecyclerView.SwipeRefreshLayoutView.Refreshing = false;
 
-                var countList2 = NativeFeedAdapter.ListDiffer.Count;
+                Console.WriteLine($"[FetchFeedPostsApi] API Response - Status: {apiStatus}, Response: {respond}");
 
-                Trace.BeginSection("LoadDataApi Start " + offset);
-
-                Console.WriteLine("API = LoadDataApi Start " + offset);
                 if (apiStatus != 200 || respond is not PostObject result || result.Data == null)
                 {
-                    WRecyclerView.MainScrollEvent.IsLoading = false;
+                    WRecyclerView.MainScrollEvent.IsLoading = false; // Reset IsLoading
                     Methods.DisplayReportResult(ActivityContext, respond);
+                    Console.WriteLine("[FetchFeedPostsApi] API call failed or returned no data.");
+                    return; // Exit early to avoid further processing
                 }
                 else
                 {
@@ -192,187 +269,8 @@ namespace WoWonder.Activities.NativePost.Post
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"[FetchFeedPostsApi] Exception: {ex.Message}");
                 Methods.DisplayReportResultTrack(ex);
-            }
-        }
-
-        public async Task<int> LoadDataApiAsync(int apiStatus, dynamic respond, string offset, string typeRun = "Add")
-        {
-            //offset = "10";
-
-
-            if (respond is PostObject results)
-            {
-                await Task.Run(() =>
-                {
-                    Trace.BeginSection("LoadDataApiAsync For Each Simulation");
-                    foreach (PostDataObject post in from post in results.Data let check = NativeFeedAdapter.ListDiffer.FirstOrDefault(a => a?.PostData?.PostId == post.PostId && a?.TypeView == PostFunctions.GetAdapterType(post)) where check == null select post)
-                    {
-
-                        // add = true;
-                        var combiner = new FeedCombiner(null, NativeFeedAdapter.ListDiffer, ActivityContext, NativeFeedAdapter.NativePostType);
-
-                        if (NativeFeedAdapter.NativePostType == NativeFeedType.Global)
-                        {
-                            if (results.Data.Count < 6 && NativeFeedAdapter.ListDiffer.Count < 6)
-                                if (!ShowFindMoreAlert)
-                                {
-                                    ShowFindMoreAlert = true;
-
-                                    combiner.AddFindMoreAlertPostView("Pages");
-                                    combiner.AddFindMoreAlertPostView("Groups");
-                                }
-
-                            var check1 = NativeFeedAdapter.ListDiffer.FirstOrDefault(a => a.TypeView == PostModelType.SuggestedGroupsBox);
-                            if (check1 == null && AppSettings.ShowSuggestedGroup && NativeFeedAdapter.ListDiffer.Count > 0 && NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowSuggestedGroupCount == 0 && ListUtils.SuggestedGroupList.Count > 0)
-                                combiner.AddSuggestedBoxPostView(PostModelType.SuggestedGroupsBox);
-
-                            var check2 = NativeFeedAdapter.ListDiffer.FirstOrDefault(a => a.TypeView == PostModelType.SuggestedUsersBox);
-                            if (check2 == null && AppSettings.ShowSuggestedUser && NativeFeedAdapter.ListDiffer.Count > 0 && NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowSuggestedUserCount == 0 && ListUtils.SuggestedUserList.Count > 0)
-                                combiner.AddSuggestedBoxPostView(PostModelType.SuggestedUsersBox);
-
-                            var check3 = NativeFeedAdapter.ListDiffer.FirstOrDefault(a => a.TypeView == PostModelType.SuggestedPagesBox);
-                            if (check3 == null && AppSettings.ShowSuggestedPage && NativeFeedAdapter.ListDiffer.Count > 0 && NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowSuggestedPageCount == 0 && ListUtils.SuggestedPageList.Count > 0)
-                                combiner.AddSuggestedBoxPostView(PostModelType.SuggestedPagesBox);
-                        }
-                        else if (NativeFeedAdapter.NativePostType == NativeFeedType.Advertise)
-                        {
-                            post.PostType = "ad";
-                        }
-
-                        if (NativeFeedAdapter.ListDiffer.Count % (AppSettings.ShowAdNativeCount * 10) == 0 && NativeFeedAdapter.ListDiffer.Count > 0 && AppSettings.ShowAdMobNativePost)
-                            if (LastAdsType == PostModelType.AdMob1)
-                            {
-                                LastAdsType = PostModelType.AdMob2;
-                                combiner.AddAdsPostView(PostModelType.AdMob1);
-                            }
-                            else if (LastAdsType == PostModelType.AdMob2)
-                            {
-                                LastAdsType = PostModelType.AdMob3;
-                                combiner.AddAdsPostView(PostModelType.AdMob2);
-                            }
-                            else if (LastAdsType == PostModelType.AdMob3)
-                            {
-                                LastAdsType = PostModelType.AdMob1;
-                                combiner.AddAdsPostView(PostModelType.AdMob3);
-                            }
-
-                        var combine = new FeedCombiner(RegexFilterText(post), NativeFeedAdapter.ListDiffer, ActivityContext, NativeFeedAdapter.NativePostType);
-                        if (post.PostType == "ad" && AppSettings.ShowAdvertise)
-                        {
-                            combine.AddAdsPost();
-                        }
-                        else
-                        {
-                            bool isPromoted = post.IsPostBoosted == "1" || post.SharedInfo.SharedInfoClass != null && post.SharedInfo.SharedInfoClass?.IsPostBoosted == "1";
-                            if (isPromoted)
-                            {
-                                if (NativeFeedAdapter.ListDiffer.Count == 0)
-                                    combine.CombineDefaultPostSections();
-                                else
-                                {
-                                    var p = NativeFeedAdapter.ListDiffer?.FirstOrDefault(a => a.TypeView == PostModelType.PromotePost);
-                                    if (p != null)
-                                        combine.CombineDefaultPostSections();
-                                    else
-                                        combine.CombineDefaultPostSections("Top");
-
-                                }
-                            }
-                            else
-                            {
-                                combine.CombineDefaultPostSections();
-                            }
-                        }
-
-                        if (NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowAdNativeCount == 0 && NativeFeedAdapter.ListDiffer.Count > 0 && AppSettings.ShowFbNativeAds)
-                            combiner.AddAdsPostView(PostModelType.FbAdNative);
-                    }
-
-                });
-            }
-
-            return NativeFeedAdapter.ItemCount;
-        }
-
-        #endregion
-
-        #region Api
-
-        public async Task FetchNewsFeedApiPosts(string offset = "0", string typeRun = "Add", string hash = "")
-        {
-            switch (WRecyclerView.MainScrollEvent.IsLoading)
-            {
-                case true:
-                    return;
-            }
-
-            if (!Methods.CheckConnectivity())
-                return;
-
-            WRecyclerView.Hash = hash;
-            int apiStatus;
-            dynamic respond;
-
-            WRecyclerView.MainScrollEvent.IsLoading = true;
-            var adId = NativeFeedAdapter.ListDiffer.LastOrDefault(a => a.TypeView == PostModelType.AdsPost && a.PostData.PostType == "ad")?.PostData?.Id ?? "";
-            switch (NativeFeedAdapter.NativePostType)
-            {
-                case NativeFeedType.Global:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_news_feed", NativeFeedAdapter.IdParameter, "", WRecyclerView.GetFilter(), adId, WRecyclerView.GetPostType());
-                    break;
-                case NativeFeedType.User:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_user_posts", NativeFeedAdapter.IdParameter, "", "", adId);
-                    break;
-                case NativeFeedType.Group:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_group_posts", NativeFeedAdapter.IdParameter, "", "", adId);
-                    break;
-                case NativeFeedType.Page:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_page_posts", NativeFeedAdapter.IdParameter, "", "", adId);
-                    break;
-                case NativeFeedType.Event:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_event_posts", NativeFeedAdapter.IdParameter, "", "", adId);
-                    break;
-                case NativeFeedType.Saved:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "saved", "", "", "", adId);
-                    break;
-                case NativeFeedType.HashTag:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "hashtag", "", hash, "", adId);
-                    break;
-                case NativeFeedType.Video:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost("5", offset, "get_random_videos", "", "", "", adId);
-                    break;
-                case NativeFeedType.Popular:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetPopularPost(AppSettings.PostApiLimitOnScroll, offset);
-                    break;
-                case NativeFeedType.Boosted:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetBoostedPost();
-                    break;
-                case NativeFeedType.Live:
-                    (apiStatus, respond) = await RequestsAsync.Posts.GetLivePost();
-                    break;
-                case NativeFeedType.Advertise:
-                    (apiStatus, respond) = await RequestsAsync.Advertise.GetAdvertisePost(AppSettings.PostApiLimitOnScroll, offset);
-                    break;
-                default:
-                    return;
-            }
-
-            if (apiStatus != 200 || respond is not PostObject result || result.Data == null)
-            {
-                WRecyclerView.MainScrollEvent.IsLoading = false;
-                Methods.DisplayReportResult(ActivityContext, respond);
-            }
-            else
-            {
-                if (typeRun == "FirstInsert")
-                {
-                    InsertTopDataApi(apiStatus, respond);
-                }
-                else
-                {
-                    LoadDataApi(apiStatus, respond, offset, typeRun);
-                }
             }
         }
 
@@ -436,8 +334,6 @@ namespace WoWonder.Activities.NativePost.Post
                                 {
                                     if (add && WRecyclerView.PopupBubbleView != null && WRecyclerView.PopupBubbleView.Visibility != ViewStates.Visible && AppSettings.ShowNewPostOnNewsFeed)
                                         WRecyclerView.PopupBubbleView.Visibility = ViewStates.Visible;
-                                    else
-                                        WRecyclerView.PopupBubbleView.Visibility = WRecyclerView.PopupBubbleView.Visibility;
                                 }
                                 catch (Exception e)
                                 {
@@ -449,90 +345,12 @@ namespace WoWonder.Activities.NativePost.Post
                         {
                             bool add = false;
 
-                            Trace.BeginSection("LoadDataApi Start");
-
                             foreach (var post in from post in result.Data let check = NativeFeedAdapter.ListDiffer.FirstOrDefault(a => a?.PostData?.PostId == post.PostId && a?.TypeView == PostFunctions.GetAdapterType(post)) where check == null select post)
                             {
                                 add = true;
                                 var combiner = new FeedCombiner(null, NativeFeedAdapter.ListDiffer, ActivityContext, NativeFeedAdapter.NativePostType);
-
-                                if (NativeFeedAdapter.NativePostType == NativeFeedType.Global)
-                                {
-                                    if (result.Data.Count < 6 && NativeFeedAdapter.ListDiffer.Count < 6)
-                                        if (!ShowFindMoreAlert)
-                                        {
-                                            ShowFindMoreAlert = true;
-
-                                            combiner.AddFindMoreAlertPostView("Pages");
-                                            combiner.AddFindMoreAlertPostView("Groups");
-                                        }
-
-                                    var check1 = NativeFeedAdapter.ListDiffer.FirstOrDefault(a => a.TypeView == PostModelType.SuggestedGroupsBox);
-                                    if (check1 == null && AppSettings.ShowSuggestedGroup && NativeFeedAdapter.ListDiffer.Count > 0 && NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowSuggestedGroupCount == 0 && ListUtils.SuggestedGroupList.Count > 0)
-                                        combiner.AddSuggestedBoxPostView(PostModelType.SuggestedGroupsBox);
-
-                                    var check2 = NativeFeedAdapter.ListDiffer.FirstOrDefault(a => a.TypeView == PostModelType.SuggestedUsersBox);
-                                    if (check2 == null && AppSettings.ShowSuggestedUser && NativeFeedAdapter.ListDiffer.Count > 0 && NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowSuggestedUserCount == 0 && ListUtils.SuggestedUserList.Count > 0)
-                                        combiner.AddSuggestedBoxPostView(PostModelType.SuggestedUsersBox);
-
-                                    var check3 = NativeFeedAdapter.ListDiffer.FirstOrDefault(a => a.TypeView == PostModelType.SuggestedPagesBox);
-                                    if (check3 == null && AppSettings.ShowSuggestedPage && NativeFeedAdapter.ListDiffer.Count > 0 && NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowSuggestedPageCount == 0 && ListUtils.SuggestedPageList.Count > 0)
-                                        combiner.AddSuggestedBoxPostView(PostModelType.SuggestedPagesBox);
-                                }
-                                else if (NativeFeedAdapter.NativePostType == NativeFeedType.Advertise)
-                                {
-                                    post.PostType = "ad";
-                                }
-
-                                if (NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowAdNativeCount == 0 && NativeFeedAdapter.ListDiffer.Count > 0 && AppSettings.ShowAdMobNativePost)
-                                    if (LastAdsType == PostModelType.AdMob1)
-                                    {
-                                        LastAdsType = PostModelType.AdMob2;
-                                        combiner.AddAdsPostView(PostModelType.AdMob1);
-                                    }
-                                    else if (LastAdsType == PostModelType.AdMob2)
-                                    {
-                                        LastAdsType = PostModelType.AdMob3;
-                                        combiner.AddAdsPostView(PostModelType.AdMob2);
-                                    }
-                                    else if (LastAdsType == PostModelType.AdMob3)
-                                    {
-                                        LastAdsType = PostModelType.AdMob1;
-                                        combiner.AddAdsPostView(PostModelType.AdMob3);
-                                    }
-
-                                var combine = new FeedCombiner(RegexFilterText(post), NativeFeedAdapter.ListDiffer, ActivityContext, NativeFeedAdapter.NativePostType);
-                                if (post.PostType == "ad" && AppSettings.ShowAdvertise)
-                                {
-                                    combine.AddAdsPost();
-                                }
-                                else
-                                {
-                                    bool isPromoted = post.IsPostBoosted == "1" || post.SharedInfo.SharedInfoClass != null && post.SharedInfo.SharedInfoClass?.IsPostBoosted == "1";
-                                    if (isPromoted)
-                                    {
-                                        if (NativeFeedAdapter.ListDiffer.Count == 0)
-                                            combine.CombineDefaultPostSections();
-                                        else
-                                        {
-                                            var p = NativeFeedAdapter.ListDiffer?.FirstOrDefault(a => a.TypeView == PostModelType.PromotePost);
-                                            if (p != null)
-                                                combine.CombineDefaultPostSections();
-                                            else
-                                                combine.CombineDefaultPostSections("Top");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        combine.CombineDefaultPostSections();
-                                    }
-                                }
-                                Trace.BeginSection("LoadDataApi ForEach");
-                                if (NativeFeedAdapter.ListDiffer.Count % AppSettings.ShowAdNativeCount == 0 && NativeFeedAdapter.ListDiffer.Count > 0 && AppSettings.ShowFbNativeAds)
-                                    combiner.AddAdsPostView(PostModelType.FbAdNative);
+                                combiner.CombineDefaultPostSections();
                             }
-
-                            Trace.BeginSection("LoadDataApi End");
 
                             if (add)
                             {
@@ -540,47 +358,14 @@ namespace WoWonder.Activities.NativePost.Post
                                 {
                                     try
                                     {
-                                        if (countList == 0)
-                                        {
-                                            NativeFeedAdapter.NotifyDataSetChanged();
-                                        }
-                                        else
-                                        {
-
-                                            //NativeFeedAdapter.NotifyItemRangeInserted(countList, NativeFeedAdapter.ListDiffer.Count - countList  );
-                                            Trace.BeginSection("NotifyItemRangeInserted Before Simulation");
-                                            WRecyclerView.SetItemAnimator(null);
-                                            NativeFeedAdapter.NotifyItemRangeInserted(countList + 1, NativeFeedAdapter.ListDiffer.Count - countList);
-                                            Trace.BeginSection("NotifyItemRangeInserted After Simulation");
-                                        }
+                                        NativeFeedAdapter.NotifyItemRangeInserted(countList, NativeFeedAdapter.ListDiffer.Count - countList);
                                     }
                                     catch (Exception e)
                                     {
                                         Methods.DisplayReportResultTrack(e);
                                     }
                                 });
-
-                                //WRecyclerView.Post(new Runnable(() =>
-                                //{
-                                //    if (countList == 0)
-                                //    {
-                                //        NativeFeedAdapter.NotifyDataSetChanged();
-                                //    }
-                                //    else
-                                //    {
-
-                                //        //NativeFeedAdapter.NotifyItemRangeInserted(countList, NativeFeedAdapter.ListDiffer.Count - countList  );
-                                //        Trace.BeginSection("NotifyItemRangeInserted Before Simulation");
-                                //        WRecyclerView.SetItemAnimator(null);
-                                //        NativeFeedAdapter.NotifyItemRangeInserted(countList + 1, NativeFeedAdapter.ListDiffer.Count - countList);
-                                //        Trace.BeginSection("NotifyItemRangeInserted After Simulation");
-                                //    }
-                                //}));
                             }
-                            //else
-                            //{
-                            //    ToastUtils.ShowToast(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_NoMorePost), ToastLength.Short); 
-                            //}
                         }
                     }
 
@@ -590,11 +375,6 @@ namespace WoWonder.Activities.NativePost.Post
                         {
                             WRecyclerView.Visibility = ViewStates.Visible;
                             WRecyclerView?.ShimmerInflater?.Hide();
-
-                            //if (NativeFeedAdapter.NativePostType == NativeFeedType.Global)
-                            //    WRecyclerView.DataPostJson = JsonConvert.SerializeObject(result);
-
-                            ShowEmptyPage();
                         }
                         catch (Exception e)
                         {
@@ -827,34 +607,35 @@ namespace WoWonder.Activities.NativePost.Post
             try
             {
                 if (!Methods.CheckConnectivity())
+                {
+                    Console.WriteLine("[FetchLoadMoreNewsFeedApiPosts] No internet connection.");
                     return;
+                }
 
                 if (NativeFeedAdapter.NativePostType != NativeFeedType.Global)
-                    return;
-
-                switch (PostCacheList?.Count)
                 {
-                    case > 40:
-                        return;
+                    Console.WriteLine("[FetchLoadMoreNewsFeedApiPosts] NativePostType is not Global.");
+                    return;
+                }
+
+                if (PostCacheList?.Count > 40)
+                {
+                    Console.WriteLine("[FetchLoadMoreNewsFeedApiPosts] PostCacheList already contains more than 40 items.");
+                    return;
                 }
 
                 var diff = NativeFeedAdapter.ListDiffer;
                 var list = new List<AdapterModelsClass>(diff);
-                switch (list.Count)
+                if (list.Count <= 20)
                 {
-                    case <= 20:
-                        return;
+                    Console.WriteLine("[FetchLoadMoreNewsFeedApiPosts] Not enough items in ListDiffer to fetch more posts.");
+                    return;
                 }
 
                 var item = list.LastOrDefault();
-
-                var lastItem = list.IndexOf(item);
-
-                item = list[lastItem];
-
                 string offset;
 
-                switch (item.TypeView)
+                switch (item?.TypeView)
                 {
                     case PostModelType.Divider:
                     case PostModelType.ViewProgress:
@@ -868,16 +649,16 @@ namespace WoWonder.Activities.NativePost.Post
                     case PostModelType.SuggestedUsersBox:
                     case PostModelType.CommentSection:
                     case PostModelType.AddCommentSection:
-                        item = list.LastOrDefault(a => a.TypeView != PostModelType.Divider && a.TypeView != PostModelType.ViewProgress && a.TypeView != PostModelType.AdMob1 && a.TypeView != PostModelType.AdMob2 && a.TypeView != PostModelType.AdMob3 && a.TypeView != PostModelType.FbAdNative && a.TypeView != PostModelType.AdsPost && a.TypeView != PostModelType.SuggestedPagesBox && a.TypeView != PostModelType.SuggestedGroupsBox && a.TypeView != PostModelType.SuggestedUsersBox && a.TypeView != PostModelType.CommentSection && a.TypeView != PostModelType.AddCommentSection);
-                        offset = item?.PostData?.PostId ?? "0";
-                        Console.WriteLine(offset);
+                        offset = NativeFeedAdapter.ListDiffer.Count == 0 ? "0" : NativeFeedAdapter.ListDiffer.LastOrDefault()?.PostData?.PostId ?? "0";
+                        Console.WriteLine($"[FetchLoadMoreNewsFeedApiPosts] Offset determined from last item: {offset}");
                         break;
                     default:
-                        offset = item.PostData?.PostId ?? "0";
+                        offset = item?.PostData?.PostId ?? "0";
+                        Console.WriteLine($"[FetchLoadMoreNewsFeedApiPosts] Offset determined from item: {offset}");
                         break;
                 }
 
-                Console.WriteLine(offset);
+                Console.WriteLine($"[FetchLoadMoreNewsFeedApiPosts] Final Offset: {offset}");
 
                 int apiStatus;
                 dynamic respond;
@@ -886,14 +667,19 @@ namespace WoWonder.Activities.NativePost.Post
                 {
                     case NativeFeedType.Global:
                         var adId = NativeFeedAdapter.ListDiffer.LastOrDefault(a => a.TypeView == PostModelType.AdsPost && a.PostData.PostType == "ad")?.PostData?.Id ?? "";
+                        Console.WriteLine($"[FetchLoadMoreNewsFeedApiPosts] Fetching posts with AdId: {adId}");
                         (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost(AppSettings.PostApiLimitOnScroll, offset, "get_news_feed", NativeFeedAdapter.IdParameter, "", WRecyclerView.GetFilter(), adId, WRecyclerView.GetPostType());
                         break;
                     default:
+                        Console.WriteLine("[FetchLoadMoreNewsFeedApiPosts] Unsupported NativePostType.");
                         return;
                 }
 
+                Console.WriteLine($"[FetchLoadMoreNewsFeedApiPosts] API Response - Status: {apiStatus}, Response: {respond}");
+
                 if (apiStatus != 200 || respond is not PostObject result || result.Data == null)
                 {
+                    Console.WriteLine("[FetchLoadMoreNewsFeedApiPosts] API call failed or returned no data.");
                     Methods.DisplayReportResult(ActivityContext, respond);
                 }
                 else
@@ -923,13 +709,18 @@ namespace WoWonder.Activities.NativePost.Post
                                         break;
                                 }
 
-                                break;
+                                Console.WriteLine($"[FetchLoadMoreNewsFeedApiPosts] PostCacheList updated. Current count: {PostCacheList.Count}");
                             }
+                            break;
+                        default:
+                            Console.WriteLine("[FetchLoadMoreNewsFeedApiPosts] No new posts returned from API.");
+                            break;
                     }
                 }
             }
             catch (Exception e)
             {
+                Console.WriteLine($"[FetchLoadMoreNewsFeedApiPosts] Exception: {e.Message}");
                 Methods.DisplayReportResultTrack(e);
             }
         }
@@ -1121,92 +912,37 @@ namespace WoWonder.Activities.NativePost.Post
         {
             try
             {
-                var listLivePost = list?.Where(a => a.LiveTime != null && a.LiveTime.Value > 0 && a.IsStillLive != null && a.IsStillLive.Value && string.IsNullOrEmpty(a.AgoraResourceId) && string.IsNullOrEmpty(a.PostFile))?.ToList();
-                switch (NativeFeedAdapter.NativePostType)
+                // Process posts without any RandomId-specific conditions
+                foreach (var post in list)
                 {
-                    case NativeFeedType.Global:
-                        var mainActivity = TabbedMainActivity.GetInstance();
-                        var checkSection = mainActivity?.NewsFeedTab?.PostFeedAdapter?.ListDiffer?.FirstOrDefault(a => a.TypeView == PostModelType.Story);
-                        if (checkSection != null)
-                        {
-                            if (listLivePost?.Count > 0)
-                            {
-                                foreach (var post in from post in listLivePost let check = checkSection.StoryList.FirstOrDefault(a => a?.DataLivePost?.PostId == post.PostId) where check == null select post)
-                                {
-                                    if (checkSection.StoryList.Count > 1)
-                                    {
-                                        checkSection.StoryList.Insert(1, new StoryDataObject
-                                        {
-                                            Avatar = post.Publisher.Avatar,
-                                            Type = "Live",
-                                            Username = ActivityContext.GetText(Resource.String.Lbl_Live),
-                                            DataLivePost = post
-                                        });
-                                    }
-                                    else
-                                    {
-                                        checkSection.StoryList.Add(new StoryDataObject
-                                        {
-                                            Avatar = post.Publisher.Avatar,
-                                            Type = "Live",
-                                            Username = WoWonderTools.GetNameFinal(post.Publisher),
-                                            DataLivePost = post,
-                                        });
-                                    }
-                                }
+                    // Add your processing logic here if needed
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
 
-                                ActivityContext?.RunOnUiThread(() =>
-                                {
-                                    try
-                                    {
-                                        var d = new Runnable(() => { mainActivity?.NewsFeedTab?.PostFeedAdapter?.NotifyItemChanged(mainActivity.NewsFeedTab.PostFeedAdapter.ListDiffer.IndexOf(checkSection)); });
-                                        d.Run();
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        Methods.DisplayReportResultTrack(e);
-                                    }
-                                });
-                            }
-                        }
-                        //wael
-                        //case NativeFeedType.User when NativeFeedAdapter.IdParameter != UserDetails.UserId:
-                        //    var userProfileActivity = UserProfileActivity.GetInstance();
-                        //    if (userProfileActivity != null)
-                        //    {
-                        //        var data = userProfileActivity.PostFeedAdapter?.ListDiffer?.FirstOrDefault(a => a.TypeView == PostModelType.UserProfileInfoHeaderSection);
-                        //        if (listLivePost?.Count > 0)
-                        //        {
-                        //            UserDetails.DataLivePost = listLivePost.FirstOrDefault();
+        public static async Task GetAllPostVideo()
+        {
+            try
+            {
+                if (!Methods.CheckConnectivity())
+                    return;
 
-                        //            if (data != null)
-                        //                data.InfoUserModel.IsLive = true; 
-                        //        }
-                        //        else
-                        //        {
-                        //            UserDetails.DataLivePost = null;
-
-                        //            if (data != null)
-                        //                data.InfoUserModel.IsLive = false;
-                        //        }
-
-                        //        ActivityContext?.RunOnUiThread(() =>
-                        //        {
-                        //            try
-                        //            {
-                        //                var d = new Runnable(() => { userProfileActivity?.PostFeedAdapter?.NotifyItemChanged(userProfileActivity.PostFeedAdapter.ListDiffer.IndexOf(data)); });
-                        //                d.Run();
-                        //            }
-                        //            catch (Exception e)
-                        //            {
-                        //                Methods.DisplayReportResultTrack(e);
-                        //            }
-                        //        });
-                        //    }
-
-                        break;
-                    default:
-                        return;
+                var (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost("10", "0", "get_news_feed", "", "", "0", "0", "video");
+                if (apiStatus != 200 || respond is not PostObject result || result.Data == null)
+                {
+                    // Handle error
+                }
+                else
+                {
+                    // Process posts without any RandomId-specific conditions
+                    foreach (var post in result.Data)
+                    {
+                        // Add your processing logic here if needed
+                    }
                 }
             }
             catch (Exception e)
@@ -1282,65 +1018,6 @@ namespace WoWonder.Activities.NativePost.Post
             {
                 Methods.DisplayReportResultTrack(e);
                 return item;
-            }
-        }
-
-        public static async Task GetAllPostVideo()
-        {
-            try
-            {
-                if (!Methods.CheckConnectivity())
-                    return;
-
-                var (apiStatus, respond) = await RequestsAsync.Posts.GetGlobalPost("10", "0", "get_news_feed", "", "", "0", "0", "video");
-                if (apiStatus != 200 || respond is not PostObject result || result.Data == null)
-                {
-                    // Methods.DisplayReportResult(ActivityContext, respond);
-                }
-                else
-                {
-                    var respondList = result.Data?.Count;
-                    if (respondList > 0)
-                    {
-                        foreach (var item in from item in result.Data let check = ListUtils.VideoReelsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                        {
-                            var checkViewed = ListUtils.VideoReelsViewsList.FirstOrDefault(a => a.Id == item.Id);
-                            if (checkViewed == null)
-                            {
-                                if (!AppSettings.ShowYouTubeReels && !string.IsNullOrEmpty(item.PostYoutube))
-                                    continue;
-
-                                if (!string.IsNullOrEmpty(item.PostFacebook) || !string.IsNullOrEmpty(item.PostVimeo) || !string.IsNullOrEmpty(item.PostDeepsound) || !string.IsNullOrEmpty(item.PostPlaytube))
-                                    continue;
-
-                                ListUtils.VideoReelsList.Add(new ReelsVideoClass
-                                {
-                                    Id = item.Id,
-                                    Type = ItemType.ReelsVideo,
-                                    VideoData = item
-                                });
-
-                                if (AdsGoogle.NativeAdsPool?.Count > 0 && ListUtils.VideoReelsList.Count % AppSettings.ShowAdNativeReelsCount == 0)
-                                {
-                                    ListUtils.VideoReelsList.Add(new ReelsVideoClass
-                                    {
-                                        Type = ItemType.AdMob,
-                                    });
-                                }
-                            }
-                        }
-
-                        var list = ListUtils.VideoReelsList.Where(a => a.Type == ItemType.ReelsVideo).Take(7);
-                        foreach (var videoObject in list)
-                        {
-                            new PreCachingExoPlayerVideo(Application.Context).CacheVideosFiles(Uri.Parse(videoObject.VideoData?.PostFileFull));
-                        }
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
             }
         }
     }

@@ -194,7 +194,7 @@ namespace WoWonder.Activities.Tabbes
             }
         }
 
-        public override void OnTrimMemory(TrimMemory level)
+        public override void OnTrimMemory(Android.Content.TrimMemory level)
         {
             try
             {
@@ -518,31 +518,6 @@ namespace WoWonder.Activities.Tabbes
                         }
                     }
                 }
-                //Edit post product 
-                else if (requestCode == 3500 && resultCode == Result.Ok)
-                {
-                    if (string.IsNullOrEmpty(data.GetStringExtra("itemData"))) return;
-                    var item = JsonConvert.DeserializeObject<ProductDataObject>(data.GetStringExtra("itemData"));
-                    if (item != null)
-                    {
-                        var diff = NewsFeedTab.PostFeedAdapter?.ListDiffer;
-                        var dataGlobal = diff.Where(a => a.PostData?.Id == item.PostId).ToList();
-                        if (dataGlobal.Count > 0)
-                            foreach (var postData in dataGlobal)
-                            {
-                                var index = diff.IndexOf(postData);
-                                if (index > -1)
-                                {
-                                    var productUnion = postData.PostData.Product?.ProductClass;
-                                    if (productUnion != null) productUnion.Id = item.Id;
-                                    productUnion = item;
-                                    Console.WriteLine(productUnion);
-
-                                    NewsFeedTab.PostFeedAdapter?.NotifyItemChanged(index);
-                                }
-                            }
-                    }
-                }
                 //case 4711:
                 //    switch (resultCode) // The switch block will be triggered only with flexible update since it returns the install result codes
                 //    {
@@ -624,18 +599,18 @@ namespace WoWonder.Activities.Tabbes
                     case 0:
                         ShowPopup(e.Tab.View);
                         break;
-                    case 1:
-                        {
-                            var intent = new Intent(this, typeof(PopularPostsActivity));
-                            StartActivity(intent);
-                            break;
-                        }
-                    case 2:
-                        {
-                            var intent = new Intent(this, typeof(MostLikedPostsActivity));
-                            StartActivity(intent);
-                            break;
-                        }
+                    //case 1:
+                    //    {
+                    //        var intent = new Intent(this, typeof(PopularPostsActivity));
+                    //        StartActivity(intent);
+                    //        break;
+                    //    }
+                    //case 2:
+                    //    {
+                    //        var intent = new Intent(this, typeof(MostLikedPostsActivity));
+                    //        StartActivity(intent);
+                    //        break;
+                    //    }
                 }
             }
             catch (Exception exception)
@@ -653,18 +628,18 @@ namespace WoWonder.Activities.Tabbes
                     case 0:
                         ShowPopup(e.Tab.View);
                         break;
-                    case 1:
-                        {
-                            var intent = new Intent(this, typeof(PopularPostsActivity));
-                            StartActivity(intent);
-                            break;
-                        }
-                    case 2:
-                        {
-                            var intent = new Intent(this, typeof(MostLikedPostsActivity));
-                            StartActivity(intent);
-                            break;
-                        }
+                    //case 1:
+                    //    {
+                    //        var intent = new Intent(this, typeof(PopularPostsActivity));
+                    //        StartActivity(intent);
+                    //        break;
+                    //    }
+                    //case 2:
+                    //    {
+                    //        var intent = new Intent(this, typeof(MostLikedPostsActivity));
+                    //        StartActivity(intent);
+                    //        break;
+                    //    }
                 }
             }
             catch (Exception exception)
@@ -1229,7 +1204,7 @@ namespace WoWonder.Activities.Tabbes
                                 {
                                     if (NewsFeedTab?.PostFeedAdapter?.HolderStory?.StoryAdapter?.StoryList?.Count > 0)
                                     {
-                                        List<StoryDataObject> storyList = new List<StoryDataObject>(NewsFeedTab.PostFeedAdapter?.HolderStory.StoryAdapter.StoryList);
+                                        List<StoryDataObject> storyList = new List<StoryDataObject>(NewsFeedTab.PostFeedAdapter?.HolderStory?.StoryAdapter?.StoryList);
                                         storyList.RemoveAll(o => o.Type is "Your" or "Live");
 
                                         var indexItem = storyList.IndexOf(item);

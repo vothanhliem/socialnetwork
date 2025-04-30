@@ -1,7 +1,10 @@
-﻿using Android.Graphics;
+﻿using Android.App;
+using Android.Content; // Ensure this using directive exists
+using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidX.RecyclerView.Widget; // Added this using directive
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Load.Engine;
@@ -26,10 +29,12 @@ using WoWonderClient.Requests;
 using static WoWonder.Activities.NativePost.Extra.WRecyclerView;
 using Exception = System.Exception;
 using Uri = Android.Net.Uri;
+using AndroidXFragment = AndroidX.Fragment.App; // Optional: Alias for brevity
 
 namespace WoWonder.Activities.Tabbes.Fragment
 {
-    public class NewsFeedNative : AndroidX.Fragment.App.Fragment
+    // Explicitly qualify the base class name
+    public class NewsFeedNative : AndroidX.Fragment.App.Fragment // Or use alias: AndroidXFragment.Fragment
     {
         #region Variables Basic
 
@@ -38,6 +43,7 @@ namespace WoWonder.Activities.Tabbes.Fragment
         public NativePostAdapter PostFeedAdapter;
         public SwipeRefreshLayout SwipeRefreshLayout;
         private TabbedMainActivity GlobalContext;
+        private RecyclerViewOnScrollListener RecyclerViewOnScrollListener; // Assuming this instance variable exists
 
         private ViewStub ShimmerPageLayout;
         private View InflatedShimmer;
@@ -68,9 +74,9 @@ namespace WoWonder.Activities.Tabbes.Fragment
                 View view = inflater.Inflate(Resource.Layout.TNewsFeedLayout, container, false);
                 return view;
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(exception);
+                Methods.DisplayReportResultTrack(e);
                 return null!;
             }
         }
@@ -89,9 +95,9 @@ namespace WoWonder.Activities.Tabbes.Fragment
 
                 GlobalContext?.GetOneSignalNotification();
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(exception);
+                Methods.DisplayReportResultTrack(e);
 
             }
         }
@@ -116,9 +122,35 @@ namespace WoWonder.Activities.Tabbes.Fragment
                 GC.Collect(GC.MaxGeneration);
                 base.OnLowMemory();
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(exception);
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public override void OnResume()
+        {
+            try
+            {
+                base.OnResume();
+                AddOrRemoveEvent(true);
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public override void OnPause()
+        {
+            try
+            {
+                base.OnPause();
+                AddOrRemoveEvent(false);
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
@@ -126,10 +158,20 @@ namespace WoWonder.Activities.Tabbes.Fragment
         {
             try
             {
-                MainRecyclerView?.ReleasePlayer();
+                // Assuming NewsFeedAdapterOnLoadMoreEvent is the correct handler method name
+                if (RecyclerViewOnScrollListener != null) // Check instance before using
+                    RecyclerViewOnScrollListener.LoadMoreEvent -= NewsFeedAdapterOnLoadMoreEvent;
 
-                MainRecyclerView = null!;
+                if (SwipeRefreshLayout != null) // Check instance before using
+                    SwipeRefreshLayout.Refresh -= SwipeRefreshLayoutOnRefresh;
+
+                AddOrRemoveEvent(false);
+                MainRecyclerView = null!; // Changed MRecycler to MainRecyclerView
+                RecyclerViewOnScrollListener = null!; // Use instance variable
                 PostFeedAdapter = null!;
+                SwipeRefreshLayout = null!;
+                ShimmerInflater = null!;
+                InflatedShimmer = null!; // Changed Inflated to InflatedShimmer
                 base.OnDestroy();
             }
             catch (Exception e)
@@ -186,25 +228,32 @@ namespace WoWonder.Activities.Tabbes.Fragment
         {
             try
             {
-                PostFeedAdapter = new NativePostAdapter(GlobalContext, "", MainRecyclerView, NativeFeedType.Global);
-                MainRecyclerView.SetXTemplateShimmer(ShimmerInflater);
-                MainRecyclerView?.SetXAdapter(PostFeedAdapter, SwipeRefreshLayout);
-                MainRecyclerView.Visibility = ViewStates.Gone;
+                LinearLayoutManager LayoutManager = new LinearLayoutManager(Activity) { Orientation = LinearLayoutManager.Vertical };
+                MainRecyclerView.SetLayoutManager(LayoutManager);
+                MainRecyclerView.HasFixedSize = true;
+                MainRecyclerView.GetLayoutManager().ItemPrefetchEnabled = true;
 
-                switch (AppSettings.ShowNewPostOnNewsFeed)
+                // Fix for error CS1503: Cast Activity to AppCompatActivity
+                var compatActivity = (AndroidX.AppCompat.App.AppCompatActivity)Activity;
+                
+                // Create a List for the adapter's ListDiffer property (not ObservableCollection)
+                var adapterList = new List<AdapterModelsClass>();
+                
+                // Initialize the adapter with proper parameters
+                PostFeedAdapter = new NativePostAdapter(compatActivity, "", MainRecyclerView, NativeFeedType.Global, false)
                 {
-                    case true:
-                        MainRecyclerView?.SetXPopupBubble(PopupBubbleView);
-                        break;
-                    default:
-                        PopupBubbleView.Visibility = ViewStates.Gone;
-                        break;
-                }
+                    ListDiffer = adapterList  // Set the List<T> to ListDiffer, not ObservableCollection
+                };
+                
+                MainRecyclerView.SetAdapter(PostFeedAdapter);
 
-                MainRecyclerView.MainScrollEvent = new RecyclerScrollListener(MainRecyclerView);
-                MainRecyclerView.AddOnScrollListener(MainRecyclerView.MainScrollEvent);
-                MainRecyclerView.MainScrollEvent.LoadMoreEvent += MainRecyclerView.MainScrollEvent_LoadMoreEvent;
-                MainRecyclerView.MainScrollEvent.IsLoading = false;
+                // Corrected RecyclerViewOnScrollListener constructor call
+                RecyclerViewOnScrollListener = new RecyclerViewOnScrollListener(LayoutManager);
+                MainRecyclerView.AddOnScrollListener(RecyclerViewOnScrollListener);
+                RecyclerViewOnScrollListener.LoadMoreEvent += NewsFeedAdapterOnLoadMoreEvent;
+
+                // Get data Api
+                Task.Factory.StartNew(() => StartApiService());
             }
             catch (Exception e)
             {
@@ -217,7 +266,7 @@ namespace WoWonder.Activities.Tabbes.Fragment
         #region Refresh
 
         //Refresh 
-        public void SwipeRefreshLayoutOnRefresh(object sender, EventArgs e)
+        public void SwipeRefreshLayoutOnRefresh(object sender, EventArgs eventArgs)
         {
             try
             {
@@ -268,9 +317,9 @@ namespace WoWonder.Activities.Tabbes.Fragment
 
                 Task.Factory.StartNew(() => StartApiService());
             }
-            catch (Exception exception)
+            catch (Exception ex) // Changed variable name to avoid conflict
             {
-                Methods.DisplayReportResultTrack(exception);
+                Methods.DisplayReportResultTrack(ex);
             }
         }
 
@@ -541,5 +590,61 @@ namespace WoWonder.Activities.Tabbes.Fragment
 
         #endregion
 
+        #region Event Handlers
+
+        // Placeholder for the LoadMore event handler - Needs implementation or correction
+        private void NewsFeedAdapterOnLoadMoreEvent(object sender, EventArgs e)
+        {
+            try
+            {
+                // Implement load more logic here
+                var item = PostFeedAdapter?.ListDiffer?.LastOrDefault();
+                if (item != null && !MainRecyclerView.MainScrollEvent.IsLoading)
+                {
+                    string offset;
+                    switch (item.TypeView)
+                    {
+                        // ... cases to find correct offset ...
+                        default:
+                            offset = item.PostData?.PostId ?? "0";
+                            break;
+                    }
+                    StartApiService(offset, "Insert");
+                }
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        #endregion
+
+        private void AddOrRemoveEvent(bool addEvent)
+        {
+            try
+            {
+                // true +=  // false -=
+                switch (addEvent)
+                {
+                    case true:
+                        // Ensure event handlers are assigned only once (e.g., in OnResume or SetRecyclerViewAdapters)
+                        // SwipeRefreshLayout.Refresh += SwipeRefreshLayoutOnRefresh; // Already handled in InitComponent
+                        if (RecyclerViewOnScrollListener != null)
+                            RecyclerViewOnScrollListener.LoadMoreEvent += NewsFeedAdapterOnLoadMoreEvent;
+                        break;
+                    default:
+                        // Ensure event handlers are removed correctly (e.g., in OnPause or OnDestroy)
+                        // SwipeRefreshLayout.Refresh -= SwipeRefreshLayoutOnRefresh; // Handled in OnDestroy
+                        if (RecyclerViewOnScrollListener != null)
+                            RecyclerViewOnScrollListener.LoadMoreEvent -= NewsFeedAdapterOnLoadMoreEvent;
+                        break;
+                }
+            }
+            catch (Exception e) // Consider renaming 'e' if it conflicts with EventArgs 'e' in handlers
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
     }
 }

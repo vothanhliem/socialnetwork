@@ -457,9 +457,11 @@ namespace WoWonder.Helpers.Utils
         {
             try
             {
-                jobInfoObject.Image = jobInfoObject.Image.Contains(InitializeWoWonder.WebsiteUrl)
-                    ? jobInfoObject.Image
-                    : GetTheFinalLink(jobInfoObject.Image);
+                jobInfoObject.Image = jobInfoObject.Image.Contains(InitializeWoWonder.WebsiteUrl) switch
+                {
+                    false => GetTheFinalLink(jobInfoObject.Image),
+                    _ => jobInfoObject.Image
+                };
 
                 jobInfoObject.IsOwner = jobInfoObject.UserId == UserDetails.UserId;
 
@@ -869,13 +871,65 @@ namespace WoWonder.Helpers.Utils
         {
             try
             {
-                // Logic to check MIME types
-                return (true, "Valid");
+                var allowedExtenstionStatic = "jpg,png,jpeg,gif,mp4,m4v,webm,flv,mov,mpeg,mp3,wav";
+                if (!string.IsNullOrEmpty(path))
+                {
+                    var fileName = path.Split('/').Last();
+                    var fileNameWithExtension = fileName.Split('.').Last();
+
+                    if (!string.IsNullOrEmpty(ListUtils.SettingsSiteList?.MimeTypes))
+                    {
+                        var allowedExtenstion = ListUtils.SettingsSiteList?.AllowedExtenstion; //jpg,png,jpeg,gif,mkv,docx,zip,rar,pdf,doc,mp3,mp4,flv,wav,txt,mov,avi,webm,wav,mpeg
+                        var mimeTypes = ListUtils.SettingsSiteList?.MimeTypes; //video/mp4,video/mov,video/mpeg,video/flv,video/avi,video/webm,audio/wav,audio/mpeg,video/quicktime,audio/mp3,image/png,image/jpeg,image/gif,application/pdf,application/msword,application/zip,application/x-rar-compressed,text/pdf,application/x-pointplus,text/css
+
+                        var getMimeType = MimeTypeMap.GetMimeType(fileNameWithExtension);
+
+                        if (allowedExtenstion.Contains(fileNameWithExtension) && mimeTypes.Contains(getMimeType))
+                        {
+                            var type = Methods.AttachmentFiles.Check_FileExtension(path);
+
+                            var check = CheckAllowedFileSharingInServer(type);
+                            if (check)
+                            {
+                                if (!string.IsNullOrEmpty(ListUtils.SettingsSiteList?.VisionApiKey) && ListUtils.SettingsSiteList?.AdultImages == "1")
+                                {
+                                    byte[] dataDate = await File.ReadAllBytesAsync(path);
+
+                                    var data = await GoogleVision.CheckVisionImage(dataDate);
+                                    if (!string.IsNullOrEmpty(data?.Error?.Message) || data?.Responses[0]?.SafeSearchAnnotation?.Adult is "LIKELY" or "VERY_LIKELY")
+                                    {
+                                        //"This photo contains sensitive content which some people may find offensive or disturbing"
+                                        return (false, "AdultImages");
+                                    }
+                                }
+
+                                if (ListUtils.SettingsSiteList?.FfmpegSystem == "on" & type == "Video")
+                                {
+                                    var allowedffmpegExtenstion = ListUtils.SettingsSiteList?.AllowedffmpegExtenstion; //mov,mp4,m4a,3gp,3g2,mj2,asf,avi,flv,webm,m4v,mpeg,mpeg,mpeg,ogv,mkv,webm,mov
+                                    if (allowedffmpegExtenstion.Contains(fileNameWithExtension))
+                                    {
+                                        return (true, "");
+                                    }
+                                }
+                                else
+                                {
+                                    return (true, "");
+                                }
+                            }
+                        }
+                    }
+
+                    //just this Allowed : >> jpg,png,jpeg,gif,mp4,m4v,webm,flv,mov,mpeg,mp3,wav
+                    if (allowedExtenstionStatic.Contains(fileNameWithExtension))
+                        return (true, "");
+                }
+
+                return (false, "");
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return (false, e.Message);
+                return (false, "");
             }
         }
 
